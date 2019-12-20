@@ -8,6 +8,8 @@ using namespace std;
 
 unsigned long tmInSeconds(struct tm time, bool adjustForUTC);
 
+struct tm secondsInTm(struct tm *timeStruct, unsigned long seconds);
+
 bool isYearLeap(unsigned long year);
 
 bool leapYearChecker(const unsigned int* goldenLeapYearTable,
@@ -28,6 +30,8 @@ const static unsigned long yearInStructTm = 1900;
 const static unsigned long startYearRange = 1600;
 const static unsigned long endYearRange = 2400;
 const static unsigned long tableRowSize = 10;
+
+const static unsigned long max32BitVal = 4294967295;
 
 // Leap Years from 1800-2400
 // https://kalender-365.de/leap-years.php
@@ -96,6 +100,10 @@ int main(int argc, char* argv[]){
         startYearRange, endYearRange);
 
 
+    struct tm theTmStruct = {0}; 
+
+    theTmStruct = secondsInTm(&theTmStruct, max32BitVal);
+
     return(0);
 }
 
@@ -126,7 +134,6 @@ unsigned long tmInSeconds(struct tm time, bool adjustForUTC){
         // Is this a leap year ?
         if(isYearLeap(year)){
             ++leapYearCount;
-            //cout << year << " is a leap year." << endl;
         }
     }
 
@@ -147,10 +154,72 @@ unsigned long tmInSeconds(struct tm time, bool adjustForUTC){
         timeInSeconds -= time.tm_gmtoff;
     }
     
-
     // The value should match: https://www.unixtimestamp.com/index.php
     return(timeInSeconds);
 }
+
+
+// //=============================================================================
+// //
+// // tmInSeconds: Converts seconds since epoch to a struct tm
+// //
+// // Converts a struct tm to seconds since Epoch. The value return by this
+// // function should match https://www.unixtimestamp.com/index.php for the same
+// // tm structure.
+// //
+// // Notes: N/A
+// //=============================================================================
+// struct tm secondsInTm(struct tm *timeStruct, unsigned long seconds){
+
+//     if(0 == timeStruct)
+//         return(*timeStruct);
+
+//     unsigned long tmp = 0;
+//     timeStruct->tm_year = (seconds / secondsInYear);
+//     tmp = (seconds % secondsInYear);
+
+//     unsigned int startYear = 1970;
+//     unsigned int endYear = startYear + timeStruct->tm_year;
+//     unsigned int leapYearCount = 0;
+
+//     for(unsigned int i = startYear; i < endYear; i++){
+//         // Is this a leap year ?
+//         if(isYearLeap(i)){
+//             ++leapYearCount;
+//         }
+//     }
+
+//     unsigned int numLeapDaysInSec = leapYearCount * secondsInDay;
+
+//     timeStruct->tm_yday = numLeapDaysInSec;
+
+//     return(*timeStruct);
+// }
+
+// unsigned int yearsSinceEpoch(unsigned long seconds){
+
+//     unsigned int years = (seconds / secondsInYear);
+//     unsigned long remainingSecs = seconds % secondsInYear;
+
+//     unsigned int startYear = 1970;
+//     unsigned int endYear = startYear + years;
+//     unsigned int leapYearCount = 0;
+
+//     for(unsigned int i = startYear; i < endYear; i++){
+//         // Is this a leap year ?
+//         if(isYearLeap(i)){
+//             ++leapYearCount;
+//         }
+//     }
+
+//     unsigned int leapDaysSeconds = leapYearCount * secondsInDay; 
+
+//     if(remainingSecs < leapDaysSeconds)
+//         return(years-1);
+
+
+//     return(years);
+// }
 
 
 //=============================================================================
