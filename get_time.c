@@ -1,4 +1,5 @@
-// Compile as g++ -Wall -o get_time get_time.c
+// Compile as g++ -Wall -g -o get_time get_time.c
+// https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
 #include<iostream>
 #include<time.h>
 #include<string.h>
@@ -21,9 +22,27 @@ void printTable(const unsigned int* table,
     const unsigned int tableSize,
     const unsigned char rowLength);
 
+
+struct tm secondsInStuctTm(const unsigned long timeInSeconds);
+
+static unsigned int yearsSinceEpoch(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec);
+
+static unsigned int daysInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec);
+
+static unsigned int hoursInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec);
+
+static unsigned int minsInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec);
+
+static void printStructTm(struct tm theTime);
+
 const static unsigned long epochYear = 1970;
-const static unsigned long secondsInYear = 31536000;
 const static unsigned long secondsInDay = 86400;
+const static unsigned long secondsInYear = 31536000;
+const static unsigned long secondsInLeapYear = secondsInYear + secondsInDay;
 const static unsigned long secondsInHour = 3600;
 const static unsigned long secondsInMin = 60;
 const static unsigned long yearInStructTm = 1900;
@@ -32,6 +51,7 @@ const static unsigned long endYearRange = 2400;
 const static unsigned long tableRowSize = 10;
 
 const static unsigned long max32BitVal = 4294967295;
+const static unsigned long half32BitVal = max32BitVal/2;
 
 // Leap Years from 1800-2400
 // https://kalender-365.de/leap-years.php
@@ -99,10 +119,16 @@ int main(int argc, char* argv[]){
         sizeof(leapYearGoldenTestTable)/sizeof(unsigned int),
         startYearRange, endYearRange);
 
+    struct tm itsTime = {0};
 
-    struct tm theTmStruct = {0}; 
+    itsTime = secondsInStuctTm(max32BitVal);
+    cout << "Time in sec: " << max32BitVal << endl;
+    printStructTm(itsTime);
 
-    theTmStruct = secondsInTm(&theTmStruct, max32BitVal);
+    itsTime = secondsInStuctTm(half32BitVal);
+    cout << "Time in sec: " << half32BitVal << endl;
+    printStructTm(itsTime);
+
 
     return(0);
 }
@@ -153,74 +179,71 @@ unsigned long tmInSeconds(struct tm time, bool adjustForUTC){
     if(true == adjustForUTC) {
         timeInSeconds -= time.tm_gmtoff;
     }
-    
+
     // The value should match: https://www.unixtimestamp.com/index.php
     return(timeInSeconds);
 }
 
 
-// //=============================================================================
-// //
-// // tmInSeconds: Converts seconds since epoch to a struct tm
-// //
-// // Converts a struct tm to seconds since Epoch. The value return by this
-// // function should match https://www.unixtimestamp.com/index.php for the same
-// // tm structure.
-// //
-// // Notes: N/A
-// //=============================================================================
-// struct tm secondsInTm(struct tm *timeStruct, unsigned long seconds){
+struct tm secondsInStuctTm(const unsigned long timeInSeconds){
+    struct tm theTime = {0};
+    unsigned long remainingTimeInSec=0;
 
-//     if(0 == timeStruct)
-//         return(*timeStruct);
+    theTime.tm_year = (yearsSinceEpoch(timeInSeconds,
+        &remainingTimeInSec) + 1970) - 1900;
 
-//     unsigned long tmp = 0;
-//     timeStruct->tm_year = (seconds / secondsInYear);
-//     tmp = (seconds % secondsInYear);
+    theTime.tm_yday = daysInSec(remainingTimeInSec, &remainingTimeInSec);
 
-//     unsigned int startYear = 1970;
-//     unsigned int endYear = startYear + timeStruct->tm_year;
-//     unsigned int leapYearCount = 0;
+    theTime.tm_hour = hoursInSec(remainingTimeInSec, &remainingTimeInSec);
+    theTime.tm_min = minsInSec(remainingTimeInSec, &remainingTimeInSec);
+    theTime.tm_sec = remainingTimeInSec;
 
-//     for(unsigned int i = startYear; i < endYear; i++){
-//         // Is this a leap year ?
-//         if(isYearLeap(i)){
-//             ++leapYearCount;
-//         }
-//     }
+    return(theTime);
+}
 
-//     unsigned int numLeapDaysInSec = leapYearCount * secondsInDay;
+unsigned int yearsSinceEpoch(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec){
 
-//     timeStruct->tm_yday = numLeapDaysInSec;
+    unsigned int yearCount = 0;
+    *remainingTimeInSec = timeInSeconds;
 
-//     return(*timeStruct);
-// }
+    while(*remainingTimeInSec >= secondsInLeapYear){
 
-// unsigned int yearsSinceEpoch(unsigned long seconds){
+        if(isYearLeap(epochYear+yearCount)){
+            *remainingTimeInSec -= secondsInYear + secondsInDay;
+        } else {
+            *remainingTimeInSec -= secondsInYear;
+        }
 
-//     unsigned int years = (seconds / secondsInYear);
-//     unsigned long remainingSecs = seconds % secondsInYear;
+        ++yearCount;
+    }
 
-//     unsigned int startYear = 1970;
-//     unsigned int endYear = startYear + years;
-//     unsigned int leapYearCount = 0;
+    return(yearCount);
+}
 
-//     for(unsigned int i = startYear; i < endYear; i++){
-//         // Is this a leap year ?
-//         if(isYearLeap(i)){
-//             ++leapYearCount;
-//         }
-//     }
+unsigned int daysInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec) {
 
-//     unsigned int leapDaysSeconds = leapYearCount * secondsInDay; 
+    *remainingTimeInSec= timeInSeconds % secondsInDay;
+    // Days don't start from 0
+    return((timeInSeconds / secondsInDay)+1);
+}
 
-//     if(remainingSecs < leapDaysSeconds)
-//         return(years-1);
+unsigned int hoursInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec) {
 
+    *remainingTimeInSec= timeInSeconds % secondsInHour;
 
-//     return(years);
-// }
+    return(timeInSeconds / secondsInHour);
+}
 
+unsigned int minsInSec(const unsigned long timeInSeconds,
+    unsigned long *remainingTimeInSec) {
+
+    *remainingTimeInSec= timeInSeconds % secondsInMin;
+
+    return(timeInSeconds / secondsInMin);
+}
 
 //=============================================================================
 //
@@ -354,7 +377,7 @@ void printTable(const unsigned int* table, const unsigned int size,
     if((0==table) || (0==size) || (0==blockSize))
         return;
 
-    for(unsigned int i = 0; i < size; i++) {
+    for(unsigned int i = 0; i < size; i++){
         if(0 == ((i+1) % (blockSize))) {
             cout << table[i] << "," << endl;
         } else {
@@ -362,4 +385,14 @@ void printTable(const unsigned int* table, const unsigned int size,
         }
     }
     cout << endl;
+}
+
+
+void printStructTm(struct tm theTime){
+    cout << "tm.year: " << theTime.tm_year << endl;
+    cout << "tm.year + 1900: " << (theTime.tm_year + 1900) << endl;
+    cout << "tm.yday: " << theTime.tm_yday << endl;
+    cout << "tm.hour: " << theTime.tm_hour << endl;
+    cout << "tm.min: " << theTime.tm_min << endl;
+    cout << "tm.sec: " << theTime.tm_sec << endl;
 }
