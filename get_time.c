@@ -247,7 +247,7 @@ unsigned int minsInSec(const unsigned long timeInSeconds,
 
 //=============================================================================
 //
-// isYearLeap: determines if the year passed in is a leap year or not.
+// isYearLeap: determines if the year passed in is leap or not.
 //
 // Formulae for determining Leap Years
 //
