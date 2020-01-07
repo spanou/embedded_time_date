@@ -1,17 +1,14 @@
 // Compile as g++ -Wall -g -o get_time get_time.c
 // https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
-#include<iostream>
+#include<stdio.h>
 #include<time.h>
 #include<string.h>
+#include<stdint.h>
+#include<stdbool.h>
 
-using namespace std;
-
-
-unsigned long tmInSeconds(struct tm time, bool adjustForUTC);
+#include "rtc_base.h"
 
 struct tm secondsInTm(struct tm *timeStruct, unsigned long seconds);
-
-bool isYearLeap(unsigned long year);
 
 bool leapYearChecker(const unsigned int* goldenLeapYearTable,
     const unsigned long goldenLeapYearTableSz,
@@ -28,21 +25,25 @@ struct tm secondsInStuctTm(const unsigned long timeInSeconds);
 static unsigned int yearsSinceEpoch(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec);
 
-static unsigned int daysInSec(const unsigned long timeInSeconds,
+static unsigned int daysFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec);
 
-static unsigned int hoursInSec(const unsigned long timeInSeconds,
+static unsigned int hoursFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec);
 
-static unsigned int minsInSec(const unsigned long timeInSeconds,
+static unsigned int minsFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec);
 
-static void printStructTm(struct tm theTime);
+static unsigned int monthFromDayOfYear(const unsigned int dayOfYear,
+    unsigned int* daysRemaining,
+    bool isYearLeap);
+
+static void printStructTm(const struct tm theTime);
 
 const static unsigned long epochYear = 1970;
 const static unsigned long secondsInDay = 86400;
 const static unsigned long secondsInYear = 31536000;
-const static unsigned long secondsInLeapYear = secondsInYear + secondsInDay;
+const static unsigned long secondsInLeapYear = 31622400;
 const static unsigned long secondsInHour = 3600;
 const static unsigned long secondsInMin = 60;
 const static unsigned long yearInStructTm = 1900;
@@ -51,12 +52,12 @@ const static unsigned long endYearRange = 2400;
 const static unsigned long tableRowSize = 10;
 
 const static unsigned long max32BitVal = 4294967295;
-const static unsigned long half32BitVal = max32BitVal/2;
+const static unsigned long half32BitVal = 2147483647;
 
 // Leap Years from 1800-2400
 // https://kalender-365.de/leap-years.php
 // https://miniwebtool.com/leap-years-list/?start_year=1800&end_year=2400
-unsigned int leapYearGoldenTestTable[] = {
+static unsigned int leapYearGoldenTestTable[] = {
     1600, 1604, 1608, 1612, 1616, 1620, 1624, 1628, 1632, 1636,
     1640, 1644, 1648, 1652, 1656, 1660, 1664, 1668, 1672, 1676,
     1680, 1684, 1688, 1692, 1696, 1704, 1708, 1712, 1716, 1720,
@@ -79,6 +80,55 @@ unsigned int leapYearGoldenTestTable[] = {
     2384, 2388, 2392, 2396, 2400
 };
 
+
+char* monStrings[] = {
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+};
+
+
+char* monAbrvStrings[] = {
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+};
+
+unsigned char monDayCount[] = {
+    31,
+    28, // Leap Year 29
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31
+};
+
+
+
 int main(int argc, char* argv[]){
 
     time_t theTimeInSeconds;
@@ -89,30 +139,29 @@ int main(int argc, char* argv[]){
     struct tm *theTime = localtime(&theTimeInSeconds);
 
 
-    cout << "The Current Time Since Epoch (1970-1-1, 00:00:00 +0000UTC) = "
-         << theTimeInSeconds
-         << " sec"
-         << endl;
+    printf("The Current Time Since Epoch"
+        " (1970-1-1, 00:00:00 +0000UTC) = %ld sec \n", theTimeInSeconds);
+
 
     if(0 == theTime){
-        cout << "The call to localtime() returned a null" << endl;
+        printf("The call to localtime() returned a null");
         return(-1);
     }
 
-
-    cout << "In YYYY-MM-DD, hh:mm:ss : " << (yearInStructTm+theTime->tm_year)
-        << "-" << (theTime->tm_mon +1) << "-"
-        << theTime->tm_mday << ", "
-        << theTime->tm_hour << ":"
-        << theTime->tm_min << ":"
-        << theTime->tm_sec << endl;
+    printf("In YYYY-MM-DD, hh:mm:ss : %lu-%d-%d, %d:%d:%d\n",
+        yearInStructTm+theTime->tm_year,
+        theTime->tm_mon +1,
+        theTime->tm_mday,
+        theTime->tm_hour,
+        theTime->tm_min,
+        theTime->tm_sec);
 
     unsigned long derivedTimeInSeconds = tmInSeconds(*theTime, true);
-    cout << "tmInSeconds() = " << derivedTimeInSeconds << " sec" << endl;
+    printf("tmInSeconds() = %lu\n", derivedTimeInSeconds);
 
     if(derivedTimeInSeconds != (unsigned long)theTimeInSeconds){
-        cout << "Retrieved time - time(), is not the same as "
-            "derived time - tmInSeconds()" << endl;
+        printf("Retrieved time - time(), is not the same as "
+            "derived time - tmInSeconds()");
     }
 
     leapYearChecker( leapYearGoldenTestTable,
@@ -122,11 +171,11 @@ int main(int argc, char* argv[]){
     struct tm itsTime = {0};
 
     itsTime = secondsInStuctTm(max32BitVal);
-    cout << "Time in sec: " << max32BitVal << endl;
+    printf("Time in Sec: %lu \n", max32BitVal);
     printStructTm(itsTime);
 
     itsTime = secondsInStuctTm(half32BitVal);
-    cout << "Time in sec: " << half32BitVal << endl;
+    printf("Time in Sec: %lu \n", half32BitVal);
     printStructTm(itsTime);
 
 
@@ -188,14 +237,19 @@ unsigned long tmInSeconds(struct tm time, bool adjustForUTC){
 struct tm secondsInStuctTm(const unsigned long timeInSeconds){
     struct tm theTime = {0};
     unsigned long remainingTimeInSec=0;
+    unsigned int daysRemaining = 0;
 
     theTime.tm_year = (yearsSinceEpoch(timeInSeconds,
         &remainingTimeInSec) + 1970) - 1900;
 
-    theTime.tm_yday = daysInSec(remainingTimeInSec, &remainingTimeInSec);
+    theTime.tm_yday = daysFromSec(remainingTimeInSec, &remainingTimeInSec);
 
-    theTime.tm_hour = hoursInSec(remainingTimeInSec, &remainingTimeInSec);
-    theTime.tm_min = minsInSec(remainingTimeInSec, &remainingTimeInSec);
+    theTime.tm_mon = monthFromDayOfYear(theTime.tm_yday,
+        &daysRemaining, isYearLeap(theTime.tm_year + 1900));
+    theTime.tm_mday = daysRemaining;
+
+    theTime.tm_hour = hoursFromSec(remainingTimeInSec, &remainingTimeInSec);
+    theTime.tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
     theTime.tm_sec = remainingTimeInSec;
 
     return(theTime);
@@ -221,7 +275,7 @@ unsigned int yearsSinceEpoch(const unsigned long timeInSeconds,
     return(yearCount);
 }
 
-unsigned int daysInSec(const unsigned long timeInSeconds,
+unsigned int daysFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec) {
 
     *remainingTimeInSec= timeInSeconds % secondsInDay;
@@ -229,7 +283,7 @@ unsigned int daysInSec(const unsigned long timeInSeconds,
     return((timeInSeconds / secondsInDay)+1);
 }
 
-unsigned int hoursInSec(const unsigned long timeInSeconds,
+unsigned int hoursFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec) {
 
     *remainingTimeInSec= timeInSeconds % secondsInHour;
@@ -237,7 +291,7 @@ unsigned int hoursInSec(const unsigned long timeInSeconds,
     return(timeInSeconds / secondsInHour);
 }
 
-unsigned int minsInSec(const unsigned long timeInSeconds,
+unsigned int minsFromSec(const unsigned long timeInSeconds,
     unsigned long *remainingTimeInSec) {
 
     *remainingTimeInSec= timeInSeconds % secondsInMin;
@@ -245,6 +299,28 @@ unsigned int minsInSec(const unsigned long timeInSeconds,
     return(timeInSeconds / secondsInMin);
 }
 
+
+unsigned int monthFromDayOfYear(unsigned int dayOfYear, unsigned int* daysRemaining, bool isYearLeap){
+    unsigned int i;
+    unsigned int totalDayCount = 0;
+    unsigned char monInDays = 0;
+    unsigned int monthOfYear = 0;
+
+    for(i=0; i<12; i++){
+
+        monInDays = ((i==1) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];
+
+        if((totalDayCount + monInDays) >= dayOfYear){
+            *daysRemaining = dayOfYear - totalDayCount;
+            monthOfYear = i;
+            break;
+        } else {
+            totalDayCount += monInDays;
+        }
+    }
+
+    return(monthOfYear);
+}
 //=============================================================================
 //
 // isYearLeap: determines if the year passed in is leap or not.
@@ -308,14 +384,14 @@ bool leapYearChecker(const unsigned int* goldenLeapYearTable,
     // Set up the derived table
     const unsigned int derivedLeapYearTableSz = ((endYear-startYear) + 1);
     unsigned int derivedLeapYearTable[derivedLeapYearTableSz];
-    unsigned int derivedLeapYearTableIndex = 0;
+    unsigned long derivedLeapYearTableIndex = 0;
 
     // Print Golden Leap Year Table
-    cout << endl;
-    cout << "========== Printing Golden Table ==========" << endl;
-    cout << "Table Size = " << goldenLeapYearTableSz << endl;
+    printf("\n");
+    printf("========== Printing Golden Table ==========\n");
+    printf("Table Size = %lu \n", goldenLeapYearTableSz);
     printTable(goldenLeapYearTable, goldenLeapYearTableSz, tableRowSize);
-    cout << endl;
+    printf("\n");
 
     // Calculate and Print the Leap Year Table
     for(unsigned int i = startYear; i <= endYear; i++){
@@ -324,18 +400,16 @@ bool leapYearChecker(const unsigned int* goldenLeapYearTable,
         }
     }
 
-    cout << endl;
-    cout << "========== Printing Calculated Table ==========" << endl;
-    cout << "Table Size = " << derivedLeapYearTableIndex << endl;
+    printf("\n");
+    printf("========== Printing Calculated Table ==========\n");
+    printf("Table Size = %lu \n", derivedLeapYearTableIndex);
     printTable(derivedLeapYearTable, derivedLeapYearTableIndex, tableRowSize);
-    cout << endl;
+    printf("\n");
 
     // Size Check for the tables
     if(goldenLeapYearTableSz != derivedLeapYearTableIndex){
-        cout << "Error: Golden Leap Table Size = "
-            << goldenLeapYearTableSz
-            << " Calculated Leap Table Size = "
-            << derivedLeapYearTableIndex << endl;
+        printf("Error: Golden Leap Table Size = %lu Calculated Leap Year Table Size = %lu\n",
+            goldenLeapYearTableSz, derivedLeapYearTableIndex);
 
             ret = false;
     } else {
@@ -347,10 +421,7 @@ bool leapYearChecker(const unsigned int* goldenLeapYearTable,
         if(0 != memcmp((const void*)goldenLeapYearTable,
             (const void*)derivedLeapYearTable,
             goldenLeapYearTableSz)) {
-
-            cout << "Error: Golden Leap Table doesn't match"
-                    " Calculated Leap Table" << endl;
-
+            printf("Error: Golden Leap Table doesn't match Calculated Leap Table\n");
             ret = false;
         } else {
             ret = true;
@@ -379,20 +450,22 @@ void printTable(const unsigned int* table, const unsigned int size,
 
     for(unsigned int i = 0; i < size; i++){
         if(0 == ((i+1) % (blockSize))) {
-            cout << table[i] << "," << endl;
+            printf("%d,\n", table[i]);
         } else {
-            cout << table[i] << ", " ;
+            printf("%d, ", table[i]);
         }
     }
-    cout << endl;
+    printf("\n");
 }
 
 
 void printStructTm(struct tm theTime){
-    cout << "tm.year: " << theTime.tm_year << endl;
-    cout << "tm.year + 1900: " << (theTime.tm_year + 1900) << endl;
-    cout << "tm.yday: " << theTime.tm_yday << endl;
-    cout << "tm.hour: " << theTime.tm_hour << endl;
-    cout << "tm.min: " << theTime.tm_min << endl;
-    cout << "tm.sec: " << theTime.tm_sec << endl;
+    printf("tm.year: %d\n", theTime.tm_year );
+    printf("tm.year + 1900: %d\n", (theTime.tm_year + 1900));
+    printf("tm.mon: %d (%s)\n", theTime.tm_mon, monStrings[theTime.tm_mon]);
+    printf("tm.yday: %d\n", theTime.tm_yday);
+    printf("tm.mday: %d\n", theTime.tm_mday);
+    printf("tm.hour: %d\n", theTime.tm_hour);
+    printf("tm.min: %d\n", theTime.tm_min);
+    printf("tm.sec: %d\n", theTime.tm_sec);
 }
