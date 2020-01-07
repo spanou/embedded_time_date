@@ -81,7 +81,7 @@ static unsigned int leapYearGoldenTestTable[] = {
 };
 
 
-char* monStrings[] = {
+static const char* monStrings[] = {
     "January",
     "February",
     "March",
@@ -97,7 +97,7 @@ char* monStrings[] = {
 };
 
 
-char* monAbrvStrings[] = {
+static const char* monAbrvStrings[] = {
     "Jan",
     "Feb",
     "Mar",
@@ -112,7 +112,7 @@ char* monAbrvStrings[] = {
     "Dec"
 };
 
-unsigned char monDayCount[] = {
+static const unsigned char monDayCount[] = {
     31,
     28, // Leap Year 29
     31,
@@ -127,7 +127,63 @@ unsigned char monDayCount[] = {
     31
 };
 
+static const char* dayOfWeekStrings[] = {
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+};
 
+static const unsigned char daysOfWeekValue[] = {
+    0, /*Sunday*/
+    1, /*Monday*/
+    2, /*Tuesday*/
+    3, /*Wednesday*/
+    4, /*Thursday*/
+    5, /*Friday*/
+    6, /*Saturday*/
+};
+
+static const unsigned char monOfYearValue[] = {
+   6, /* Jan */
+   2, /* Feb */
+   2, /* Mar */
+   5, /* Apr */
+   0, /* May */
+   3, /* Jun */
+   5, /* Jul */
+   1, /* Aug */
+   4, /* Sep */
+   6, /* Oct */
+   2, /* Nov */
+   4, /* Dec */
+};
+
+static inline unsigned char monthToValue(unsigned char month){
+    return((month > 11)?0:monOfYearValue[month]);
+}
+
+static inline const char* const monthToString(unsigned char month){
+    return((month > 11)? NULL : monStrings[month]);
+}
+
+static inline const char* const monthToStringAbrv(unsigned char month){
+    return((month > 11)? NULL : monAbrvStrings[month]);
+}
+
+static inline const char* const dayOfWeekToString(unsigned char dayOfWeek){
+    return((dayOfWeek > 6)? NULL : dayOfWeekStrings[dayOfWeek]);
+}
+
+//http://gmmentalgym.blogspot.com/2011/03/day-of-week-for-any-date-revised.html#ndatebasics
+static inline unsigned char dayOfWeek(unsigned int year, unsigned char month, unsigned char day){
+    unsigned int yearValue = 2000 - year;
+    unsigned char monthValue = monthToValue(month);
+    return((yearValue+monthValue+day)%7);
+}
 
 int main(int argc, char* argv[]){
 
@@ -178,6 +234,12 @@ int main(int argc, char* argv[]){
     printf("Time in Sec: %lu \n", half32BitVal);
     printStructTm(itsTime);
 
+
+    const char* const dayOne = dayOfWeekToString(dayOfWeek(2000, 5-1, 1));
+    printf("%s\n", dayOne);
+
+    const char* const dayTwo = dayOfWeekToString(dayOfWeek(2003, 2-1, 14));
+    printf("%s\n", dayTwo);
 
     return(0);
 }
