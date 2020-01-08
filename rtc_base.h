@@ -2,7 +2,7 @@
 #define __RTC_BASE_H__
 
 
-bool isYearLeap(unsigned long year);
-unsigned long tmInSeconds(struct tm time, bool adjustForUTC);
+bool isYearLeap(uint32_t year);
+uint32_t tmInSeconds(struct tm time, bool adjustForUTC);
 
 #endif//__RTC_BASE_H__
