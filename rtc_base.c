@@ -335,14 +335,6 @@ int main(int argc, char* argv[]){
     printf("Time in Sec: %lu \n", half32BitVal);
     printStructTm(itsTime);
 
-
-    //const char* const dayOne = dayOfWeekToString(dayOfWeek(2000, Apr, 1));
-    //printf("%s\n", dayOne);
-
-    const char* const dayTwo = dayOfWeekToString(dayOfWeek(2003, Jan, 14));
-    printf("%s\n", dayTwo);
-
-
     dayOfTheWeekChecker();
 
     return(0);
@@ -682,7 +674,7 @@ void printStructTm(struct tm theTime){
     printf("tm.year + 1900: %d\n", (theTime.tm_year + 1900));
 
     printf("tm.mon: %d (%s)\n", theTime.tm_mon,
-        monStrings[theTime.tm_mon]);
+       monthToString(theTime.tm_mon));
 
     printf("tm.yday: %d\n", theTime.tm_yday);
     printf("tm.mday: %d\n", theTime.tm_mday);
