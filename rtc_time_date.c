@@ -485,26 +485,26 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining, bool is
 
     return(monthOfYear);
 }
-//=============================================================================
-//
-// isYearLeap: determines if the year passed in is leap or not.
-//
-// Formulae for determining Leap Years
-//
-// POSIX.1 defines seconds since the Epoch using a formula that approximates
-// the number of seconds between a specified time and the Epoch.
-// This formula takes account of the facts that all years that are evenly
-// divisible by 4 are leap years, but years that are evenly divisible by 100
-// are not leap years unless they are also evenly divisible by 400, in which
-// case they are leap years. This value is not the same as the actual number
-// of seconds between the time and the Epoch, because of leap seconds and
-// because system clocks are not required to be synchronized to a standard
-// reference. The intention is that the interpretation of seconds since the
-// Epoch values be consistent; see POSIX.1-2008 Rationale A.4.15 for further
-// rationale.
-//
-// Notes: N/A
-//=============================================================================
+/*=============================================================================
+ *
+ * isYearLeap: determines if the year passed in is leap or not.
+ *
+ * Formulae for determining Leap Years
+ *
+ * POSIX.1 defines seconds since the Epoch using a formula that approximates
+ * the number of seconds between a specified time and the Epoch.
+ * This formula takes account of the facts that all years that are evenly
+ * divisible by 4 are leap years, but years that are evenly divisible by 100
+ * are not leap years unless they are also evenly divisible by 400, in which
+ * case they are leap years. This value is not the same as the actual number
+ * of seconds between the time and the Epoch, because of leap seconds and
+ * because system clocks are not required to be synchronized to a standard
+ * reference. The intention is that the interpretation of seconds since the
+ * Epoch values be consistent; see POSIX.1-2008 Rationale A.4.15 for further
+ * rationale.
+ *
+ * Notes: N/A
+ =============================================================================*/
 bool isYearLeap(uint32_t year) {
     bool ret = false;
 
@@ -522,17 +522,17 @@ bool isYearLeap(uint32_t year) {
     return(ret);
 }
 
-//=============================================================================
-//
-// leapYearChecker: Tests the functionality of the isLeapYear() function.
-//
-// Tests the functionality of the isLeapYear() function by comparing a
-// well known table of leap years vs one that we build internally in this
-// function using the same year range. If the two tables match both in size
-// and content we return true, otherwise false.
-//
-// Notes: N/A
-//=============================================================================
+/*=============================================================================
+ *
+ * leapYearChecker: Tests the functionality of the isLeapYear() function.
+ *
+ * Tests the functionality of the isLeapYear() function by comparing a
+ * well known table of leap years vs one that we build internally in this
+ * function using the same year range. If the two tables match both in size
+ * and content we return true, otherwise false.
+ *
+ * Notes: N/A
+ *=============================================================================*/
 bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     const uint32_t goldenLeapYearTableSz,
     uint32_t startYear,
@@ -646,16 +646,16 @@ bool dayOfTheWeekChecker(void){
 
 }
 
-//=============================================================================
-//
-// printTable: Prints a table of data in tabular format
-//
-// Prints a table of data in tabular format taking in as parameters
-// the table itself, the size of the table, and the row length.
-//
-//
-// Notes: N/A
-//=============================================================================
+/*=============================================================================
+ *
+ * printTable: Prints a table of data in tabular format
+ *
+ * Prints a table of data in tabular format taking in as parameters
+ * the table itself, the size of the table, and the row length.
+ *
+ *
+ * Notes: N/A
+ *============================================================================*/
 void printTable(const uint32_t* table, const uint32_t size,
     const uint8_t blockSize){
 
