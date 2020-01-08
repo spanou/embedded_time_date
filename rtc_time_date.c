@@ -203,23 +203,23 @@ static const uint32_t centuryCode[] = {
     6, /*2000s*/
 };
 
-static inline uint8_t monthToValue(uint8_t month){
+static INLINE uint8_t monthToValue(uint8_t month){
     return((month > 11)?0:monOfYearValue[month]);
 }
 
-static inline const char* const monthToString(uint8_t month){
+static INLINE const char* const monthToString(uint8_t month){
     return((month > 11)? NULL : monStrings[month]);
 }
 
-static inline const char* const monthToStringAbrv(uint8_t month){
+static INLINE const char* const monthToStringAbrv(uint8_t month){
     return((month > 11)? NULL : monAbrvStrings[month]);
 }
 
-static inline const char* const dayOfWeekToString(uint8_t dayOfWeek){
+static INLINE const char* const dayOfWeekToString(uint8_t dayOfWeek){
     return((dayOfWeek > 6)? NULL : dayOfWeekStrings[dayOfWeek]);
 }
 
-static inline const uint32_t centuryToCode(int32_t idx){
+static INLINE const uint32_t centuryToCode(int32_t idx){
     return(centuryCode[idx]);
 }
 
@@ -269,7 +269,7 @@ static uint32_t yearCode(uint32_t year){
  * http://mathforum.org/dr.math/faq/faq.calendar.html
  * Calculates the day of the week utilizing the  Key Value Method (instead of the Zeller's Rule).
 */
-static inline uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
+static uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
 
     uint32_t x = ((year % 100) / 4) + day;
 
@@ -362,7 +362,8 @@ uint32_t tmInSeconds(struct tm time, bool adjustForUTC){
 
     /* Count all the leap years since the epoch */
     uint32_t leapYearCount = 0;
-    for(uint32_t i = 0; i < yearsInTotal; i++){
+    uint32_t i;
+    for(i = 0; i < yearsInTotal; i++){
         uint32_t year = epochYear + i;
         /* Is this a leap year ? */
         if(isYearLeap(year)){
@@ -558,7 +559,8 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     printf("\n");
 
     /* Calculate and Print the Leap Year Table */
-    for(uint32_t i = startYear; i <= endYear; i++){
+    uint32_t i;
+    for(i = startYear; i <= endYear; i++){
         if(true == isYearLeap(i)){
             derivedLeapYearTable[derivedLeapYearTableIndex++] = i;
         }
@@ -661,8 +663,8 @@ void printTable(const uint32_t* table, const uint32_t size,
 
     if((0==table) || (0==size) || (0==blockSize))
         return;
-
-    for(uint32_t i = 0; i < size; i++){
+    uint32_t i;
+    for(i = 0; i < size; i++){
         if(0 == ((i+1) % (blockSize))) {
             printf("%d,\n", table[i]);
         } else {
