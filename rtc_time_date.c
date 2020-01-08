@@ -1,5 +1,4 @@
-// Compile as g++ -Wall -g -o get_time get_time.c
-// https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
+/*  https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week */
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
@@ -56,9 +55,11 @@ const static uint32_t tableRowSize = 10;
 const static uint32_t max32BitVal = 4294967295;
 const static uint32_t half32BitVal = 2147483647;
 
-// Leap Years from 1800-2400
-// https://kalender-365.de/leap-years.php
-// https://miniwebtool.com/leap-years-list/?start_year=1800&end_year=2400
+/*
+ * Leap Years from 1800-2400
+ * https://kalender-365.de/leap-years.php
+ * https://miniwebtool.com/leap-years-list/?start_year=1800&end_year=2400
+*/
 static uint32_t leapYearGoldenTestTable[] = {
     1600, 1604, 1608, 1612, 1616, 1620, 1624, 1628, 1632, 1636,
     1640, 1644, 1648, 1652, 1656, 1660, 1664, 1668, 1672, 1676,
@@ -140,7 +141,7 @@ static const char* monAbrvStrings[] = {
 
 static const uint8_t monDayCount[] = {
     31,
-    28, // Leap Year 29
+    28, /* Leap Year 29 */
     31,
     30,
     31,
@@ -260,14 +261,14 @@ static uint32_t yearCode(uint32_t year){
 
         code = isCenturyInRange(yearCache);
     }
-    // TODO: Need to fix the types and possiblity of getting a negative value;
+    /*  TODO: Need to fix the types and possiblity of getting a negative value */
     return(centuryToCode(code));
 }
 
-//
-// http://mathforum.org/dr.math/faq/faq.calendar.html
-// Calculates the day of the week utilizing the  Key Value Method (instead of the Zeller's Rule).
-//
+/*
+ * http://mathforum.org/dr.math/faq/faq.calendar.html
+ * Calculates the day of the week utilizing the  Key Value Method (instead of the Zeller's Rule).
+*/
 static inline uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
 
     uint32_t x = ((year % 100) / 4) + day;
@@ -282,7 +283,7 @@ static inline uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
     x += (year %100);
     x = (x%7);
 
-    // Value of 1 means Sunday, value of 0 means Saturday
+    /* Value of 1 means Sunday, value of 0 means Saturday */
     return((x)?(x-1):Sat);
 }
 
@@ -290,9 +291,9 @@ int main(int argc, char* argv[]){
 
     time_t theTimeInSeconds;
 
-    // Retrieve the current time and date since the epoch.
+    /* Retrieve the current time and date since the epoch */
     theTimeInSeconds = time(0);
-    // Convert the time in seconds to a struct tm
+    /* Convert the time in seconds to a struct tm */
     struct tm *theTime = localtime(&theTimeInSeconds);
 
 
@@ -341,53 +342,56 @@ int main(int argc, char* argv[]){
 }
 
 
-//=============================================================================
-//
-// tmInSeconds: Converts a struct tm to seconds since Epoch.
-//
-// Converts a struct tm to seconds since Epoch. The value return by this
-// function should match https://www.unixtimestamp.com/index.php for the same
-// tm structure.
-//
-// Notes: N/A
-//=============================================================================
+/*=============================================================================
+ *
+ * tmInSeconds: Converts a struct tm to seconds since Epoch.
+ *
+ * Converts a struct tm to seconds since Epoch. The value return by this
+ * function should match https://www.unixtimestamp.com/index.php for the same
+ * tm structure.
+ *
+ * Notes: N/A
+ =============================================================================*/
 uint32_t tmInSeconds(struct tm time, bool adjustForUTC){
-    //
-    // Current Year - 1970
-    //
+
+    /* Current Year - 1970 */
     const uint32_t yearsInTotal = (time.tm_year + yearInStructTm)
         - epochYear;
 
     uint32_t timeInSeconds = 0;
 
-    // Count all the leap years since the epoch
+    /* Count all the leap years since the epoch */
     uint32_t leapYearCount = 0;
     for(uint32_t i = 0; i < yearsInTotal; i++){
         uint32_t year = epochYear + i;
-        // Is this a leap year ?
+        /* Is this a leap year ? */
         if(isYearLeap(year)){
             ++leapYearCount;
         }
     }
 
-    // The time in seconds for all the years since
-    // 1970 + the additional leap days.
+    /*
+     * The time in seconds for all the years since
+     * 1970 + the additional leap days.
+     */
     timeInSeconds = ((secondsInYear * yearsInTotal) +
         (leapYearCount * secondsInDay));
-    // The time in seconds for all the days for the current year.
+    /* The time in seconds for all the days for the current year */
     timeInSeconds += (time.tm_yday * secondsInDay);
-    // The time in seconds for all the hours in the current day.
+    /* The time in seconds for all the hours in the current day */
     timeInSeconds += (time.tm_hour * secondsInHour);
-    // The time in seconds for the minutes since the current hour
+    /* The time in seconds for the minutes since the current hour */
     timeInSeconds += (time.tm_min * secondsInMin);
-    // The time in seconds from the current minute.
+    /* The time in seconds from the current minute */
     timeInSeconds += time.tm_sec;
-    // Adjust the timezone for UTC.
-    if(true == adjustForUTC) {
-        timeInSeconds -= time.tm_gmtoff;
-    }
+    /* Adjust the timezone for UTC */
+    /*
+     * if(true == adjustForUTC) {
+     * timeInSeconds -= time.tm_gmtoff;
+     * }
+     */
 
-    // The value should match: https://www.unixtimestamp.com/index.php
+    /* The value should match: https://www.unixtimestamp.com/index.php*/
     return(timeInSeconds);
 }
 
@@ -439,7 +443,7 @@ uint32_t daysFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
     *remainingTimeInSec= timeInSeconds % secondsInDay;
-    // Days don't start from 0
+    /* Days don't start from 0 */
     return((timeInSeconds / secondsInDay)+1);
 }
 
@@ -504,7 +508,7 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining, bool is
 bool isYearLeap(uint32_t year) {
     bool ret = false;
 
-    // Is this year divisible by 4 ?
+    /* Is this year divisible by 4 ? */
     if( (0 == (year % 4)) ) {
         ret = true;
         if(0 == (year % 100)){
@@ -536,24 +540,24 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
 
     bool ret = false;
 
-    // End has to be higher than start and can't have a null pointer
+    /* End has to be higher than start and can't have a null pointer */
     if((endYear < startYear) || (0 == goldenLeapYearTable)){
         return(ret);
     }
 
-    // Set up the derived table
+    /* Set up the derived table */
     const uint32_t derivedLeapYearTableSz = ((endYear-startYear) + 1);
     uint32_t derivedLeapYearTable[derivedLeapYearTableSz];
     uint32_t derivedLeapYearTableIndex = 0;
 
-    // Print Golden Leap Year Table
+    /* Print Golden Leap Year Table */
     printf("\n");
     printf("========== Printing Golden Table ==========\n");
     printf("Table Size = %u \n", goldenLeapYearTableSz);
     printTable(goldenLeapYearTable, goldenLeapYearTableSz, tableRowSize);
     printf("\n");
 
-    // Calculate and Print the Leap Year Table
+    /* Calculate and Print the Leap Year Table */
     for(uint32_t i = startYear; i <= endYear; i++){
         if(true == isYearLeap(i)){
             derivedLeapYearTable[derivedLeapYearTableIndex++] = i;
@@ -566,7 +570,7 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     printTable(derivedLeapYearTable, derivedLeapYearTableIndex, tableRowSize);
     printf("\n");
 
-    // Size Check for the tables
+    /* Size Check for the tables */
     if(goldenLeapYearTableSz != derivedLeapYearTableIndex){
         printf("Error: Golden Leap Table Size = %u Calculated Leap Year Table Size = %u\n",
             goldenLeapYearTableSz, derivedLeapYearTableIndex);
@@ -576,7 +580,7 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
         ret = true;
     }
 
-    // Content Check for the tables
+    /* Content Check for the tables */
     if(true == ret){
         if(0 != memcmp((const void*)goldenLeapYearTable,
             (const void*)derivedLeapYearTable,
@@ -610,7 +614,7 @@ bool dayOfTheWeekChecker(void){
         {2000, Feb, 29, "Tuesday"},
         {2000, Mar, 1,  "Wednesday"},
         {1828, Feb, 29, "Friday"},
-        {1620, Feb, 29, "Saturday"}, //Failed here.
+        {1620, Feb, 29, "Saturday"},
         {1976, Feb, 29, "Sunday"},
         {1970, Jan, 1,  "Thursday"}
     };

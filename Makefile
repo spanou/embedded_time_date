@@ -5,7 +5,8 @@ CXXFLAGS ?= -Wall -std=c++11 -g -I ./include
 CPP_SRC=$(wildcard *.cpp)
 
 CC= gcc
-CFLAGS=-Wall -g -I ./include
+#CFLAGS=-Wall -g -I ./include -std=c99 -Wpedantic
+CFLAGS=-Wall -g -I ./include -std=c90
 C_SRC= $(wildcard *.c)
 
 LFLAGS= -o
@@ -13,13 +14,13 @@ LFLAGS= -o
 OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
 
 %.o:%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o:%.c
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(EXECUTABLE): $(OBJS)
-	$(CXX) $(OBJS) $(LFLAGS) $@
+	$(CC) $(OBJS) $(LFLAGS) $@
 
 
 all: $(EXECUTABLE)
