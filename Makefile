@@ -12,11 +12,11 @@ LFLAGS= -o
 
 OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
 
-%.cpp:%.o
-	$(CXX) $(CXXFLAGS) -c $< $@
+%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.c:%.o
-	$(CXX) $(CXXFLAGS) -c $< $@
+%.o:%.c
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(EXECUTABLE): $(OBJS)
 	$(CXX) $(OBJS) $(LFLAGS) $@
