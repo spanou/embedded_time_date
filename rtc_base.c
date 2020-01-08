@@ -19,6 +19,8 @@ void printTable(const unsigned int* table,
     const unsigned int tableSize,
     const unsigned char rowLength);
 
+bool dayOfTheWeekChecker(void);
+
 
 struct tm secondsInStuctTm(const unsigned long timeInSeconds);
 
@@ -80,6 +82,30 @@ static unsigned int leapYearGoldenTestTable[] = {
     2384, 2388, 2392, 2396, 2400
 };
 
+enum monthsOfYear{
+    Jan = 0,
+    Feb,
+    Mar,
+    Apr,
+    May,
+    Jun,
+    Jul,
+    Aug,
+    Sep,
+    Oct,
+    Nov,
+    Dec
+};
+
+enum daysOfWeek {
+    Sun=0,
+    Mon,
+    Tue,
+    Wed,
+    Thu,
+    Fri,
+    Sat
+};
 
 static const char* monStrings[] = {
     "January",
@@ -148,18 +174,32 @@ static const unsigned char daysOfWeekValue[] = {
 };
 
 static const unsigned char monOfYearValue[] = {
-   6, /* Jan */
-   2, /* Feb */
-   2, /* Mar */
-   5, /* Apr */
-   0, /* May */
-   3, /* Jun */
-   5, /* Jul */
-   1, /* Aug */
-   4, /* Sep */
-   6, /* Oct */
-   2, /* Nov */
-   4, /* Dec */
+   1, /* Jan */
+   4, /* Feb */
+   4, /* Mar */
+   0, /* Apr */
+   2, /* May */
+   5, /* Jun */
+   0, /* Jul */
+   3, /* Aug */
+   6, /* Sep */
+   1, /* Oct */
+   4, /* Nov */
+   6, /* Dec */
+};
+
+static const unsigned int centuries[] = {
+    17, /*1700*/
+    18, /*1800*/
+    19, /*1900*/
+    20  /*2000*/
+};
+
+static const unsigned int centuryCode[] = {
+    4, /*1700s*/
+    2, /*1800s*/
+    0, /*1900s*/
+    6, /*2000s*/
 };
 
 static inline unsigned char monthToValue(unsigned char month){
@@ -178,11 +218,72 @@ static inline const char* const dayOfWeekToString(unsigned char dayOfWeek){
     return((dayOfWeek > 6)? NULL : dayOfWeekStrings[dayOfWeek]);
 }
 
-//http://gmmentalgym.blogspot.com/2011/03/day-of-week-for-any-date-revised.html#ndatebasics
+static inline const unsigned int centuryToCode(int idx){
+    return(centuryCode[idx]);
+}
+
+static const int LOWER_RANGE = -1;
+static const int HIGHER_RANGE = -2;
+
+static int isCenturyInRange(unsigned int year){
+    unsigned int reqCentury = year/100;
+    unsigned char i = 0;
+
+
+    if(reqCentury > centuries[3])
+        return(HIGHER_RANGE);
+
+    if(reqCentury < centuries[0])
+        return(LOWER_RANGE);
+
+    for(i=0; i < 4; i++){
+        if(centuries[i] == reqCentury){
+            return(i);
+        }
+    }
+
+    return(0); /*Will never reach this point*/
+}
+
+static unsigned int yearCode(unsigned int year){
+
+    int code = isCenturyInRange(year);
+    unsigned int yearCache = year;
+
+    while(code < 0){
+
+        if(code == HIGHER_RANGE){
+            yearCache -= 400;
+        } else if (code == LOWER_RANGE){
+            yearCache += 400;
+        }
+
+        code = isCenturyInRange(yearCache);
+    }
+
+    return(centuryToCode(code));
+}
+
+//
+// http://mathforum.org/dr.math/faq/faq.calendar.html
+// Calculates the day of the week utilizing the  Key Value Method (instead of the Zeller's Rule).
+//
 static inline unsigned char dayOfWeek(unsigned int year, unsigned char month, unsigned char day){
-    unsigned int yearValue = 2000 - year;
-    unsigned char monthValue = monthToValue(month);
-    return((yearValue+monthValue+day)%7);
+
+    unsigned int x = ((year % 100) / 4) + day;
+
+    x += monthToValue(month);
+
+    if(true == isYearLeap(year) && (month <= 1)) {
+        x -= 1 ;
+    }
+
+    x += yearCode(year);
+    x += (year %100);
+    x = (x%7);
+
+    // Value of 1 means Sunday, value of 0 means Saturday
+    return((x)?(x-1):Sat);
 }
 
 int main(int argc, char* argv[]){
@@ -235,11 +336,14 @@ int main(int argc, char* argv[]){
     printStructTm(itsTime);
 
 
-    const char* const dayOne = dayOfWeekToString(dayOfWeek(2000, 5-1, 1));
-    printf("%s\n", dayOne);
+    //const char* const dayOne = dayOfWeekToString(dayOfWeek(2000, Apr, 1));
+    //printf("%s\n", dayOne);
 
-    const char* const dayTwo = dayOfWeekToString(dayOfWeek(2003, 2-1, 14));
+    const char* const dayTwo = dayOfWeekToString(dayOfWeek(2003, Jan, 14));
     printf("%s\n", dayTwo);
+
+
+    dayOfTheWeekChecker();
 
     return(0);
 }
@@ -313,6 +417,8 @@ struct tm secondsInStuctTm(const unsigned long timeInSeconds){
     theTime.tm_hour = hoursFromSec(remainingTimeInSec, &remainingTimeInSec);
     theTime.tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
     theTime.tm_sec = remainingTimeInSec;
+
+    theTime.tm_wday = dayOfWeek((theTime.tm_year + 1900), theTime.tm_mon, theTime.tm_mday);
 
     return(theTime);
 }
@@ -494,6 +600,56 @@ bool leapYearChecker(const unsigned int* goldenLeapYearTable,
     return(ret);
 }
 
+bool dayOfTheWeekChecker(void){
+
+    unsigned int i = 0;
+
+    struct _simpleDate {
+        unsigned int year;
+        unsigned char month;
+        unsigned char day;
+        const char * const dayOfWeek;
+    };
+
+    const char* day;
+
+    struct _simpleDate checkTable[] = {
+        {2000, Feb, 28, "Monday"},
+        {2000, Feb, 29, "Tuesday"},
+        {2000, Mar, 1,  "Wednesday"},
+        {1828, Feb, 29, "Friday"},
+        {1620, Feb, 29, "Saturday"}, //Failed here.
+        {1976, Feb, 29, "Sunday"},
+        {1970, Jan, 1,  "Thursday"}
+    };
+
+    for(i=0; i<7; i++){
+
+        day = dayOfWeekToString(dayOfWeek(
+            checkTable[i].year,
+            checkTable[i].month,
+            checkTable[i].day));
+
+        if(0 != strcmp(day, checkTable[i].dayOfWeek)){
+            printf("Failed: Year: %d, month: %s, day: %d, dayOfWeek: %s\n",
+                checkTable[i].year,
+                monthToStringAbrv(checkTable[i].month),
+                checkTable[i].day,
+                checkTable[i].dayOfWeek);
+            break;
+        } else {
+             printf("Passed: Year: %d, month: %s, day: %d, dayOfWeek: %s\n",
+                checkTable[i].year,
+                monthToStringAbrv(checkTable[i].month),
+                checkTable[i].day,
+                checkTable[i].dayOfWeek);
+        }
+    }
+
+    return(false);
+
+}
+
 //=============================================================================
 //
 // printTable: Prints a table of data in tabular format
@@ -524,10 +680,17 @@ void printTable(const unsigned int* table, const unsigned int size,
 void printStructTm(struct tm theTime){
     printf("tm.year: %d\n", theTime.tm_year );
     printf("tm.year + 1900: %d\n", (theTime.tm_year + 1900));
-    printf("tm.mon: %d (%s)\n", theTime.tm_mon, monStrings[theTime.tm_mon]);
+
+    printf("tm.mon: %d (%s)\n", theTime.tm_mon,
+        monStrings[theTime.tm_mon]);
+
     printf("tm.yday: %d\n", theTime.tm_yday);
     printf("tm.mday: %d\n", theTime.tm_mday);
     printf("tm.hour: %d\n", theTime.tm_hour);
     printf("tm.min: %d\n", theTime.tm_min);
     printf("tm.sec: %d\n", theTime.tm_sec);
+
+    printf("tm.wday: %d (%s)\n", theTime.tm_wday,
+        dayOfWeekToString(theTime.tm_wday));
+
 }
