@@ -29,26 +29,25 @@ EXECUTABLE=rtc_validation
 VPATH= src/ tests/ include/
 
 CXX= g++
-CXXFLAGS ?= -Wall -std=c++11 -g -I ./include
-CPP_SRC=$(wildcard ./tests/*.c)
+CXXFLAGS= -Wall -std=c++11 -g -I ./include -I ../include
+CPP_SRC?= $(wildcard ./tests/*.cpp)
 
 CC= gcc
-#CFLAGS=-Wall -g -I ./include -std=c99 -Wpedantic
 CFLAGS=-Wall -g -I ./include -I ../include -std=c90
-C_SRC ?= $(wildcard ./src/*.c)
+C_SRC?= $(wildcard ./src/*.c)
 
 LFLAGS= -o
 
 OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
 
 %.o:%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(EXECUTABLE): $(OBJS)
-	$(CC) $(OBJS) $(LFLAGS) $@
+	$(CXX) $(OBJS) $(LFLAGS) $@
 
 
 all: $(EXECUTABLE)
@@ -57,8 +56,12 @@ all: $(EXECUTABLE)
 printinfo:
 	@echo "Compiler Pre Defines ..........."
 	$(CC) -dM -E - < /dev/null
+	@echo "CXXFLAGS ......................."
 	@echo $(CXXFLAGS)
+	@echo "CFLAGS ........................."
 	@echo $(CFLAGS)
+	@echo "LFLAGS ........................."
+	@echo $(LFLAGS)
 
 .PHONY: clean
 clean:

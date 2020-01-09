@@ -235,6 +235,7 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
 bool dayOfTheWeekChecker(void){
 
     uint32_t i = 0;
+    uint8_t dayNum = 0;
 
     struct _simpleDate {
         uint32_t year;
@@ -257,10 +258,8 @@ bool dayOfTheWeekChecker(void){
 
     for(i=0; i<7; i++){
 
-        day = dayOfWeekToString(dayOfWeek(
-            checkTable[i].year,
-            checkTable[i].month,
-            checkTable[i].day));
+        dayOfWeek(checkTable[i].year, checkTable[i].month, checkTable[i].day, &dayNum);
+        day = dayOfWeekToString(dayNum);
 
         if(0 != strcmp(day, checkTable[i].dayOfWeek)){
             printf("Failed: Year: %d, month: %s, day: %d, dayOfWeek: %s\n",

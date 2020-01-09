@@ -28,7 +28,6 @@
 #define __QL_TIME_H__
 
 /*
- * [gcc -dM -E - < /dev/null] prints all the predefined macros
  * if -ansi or -std=c90, inline is not defined but __inline__ is.
  */
 #ifdef __STDC_VERSION__
@@ -65,6 +64,10 @@ typedef enum _Status {
 	INVLDPTR = 1
 } Status;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*=============================================================================
  *
  * isLeapYear: Determines if a year passed in is leap or not.
@@ -93,7 +96,7 @@ typedef enum _Status {
  *      interpretation of seconds since the Epoch values be consistent;
  *      see POSIX.1-2008 Rationale A.4.15 for further rationale.
  =============================================================================*/
-extern bool isYearLeap(uint32_t year);
+bool isYearLeap(uint32_t year);
 
 /*=============================================================================
  *
@@ -113,7 +116,7 @@ extern bool isYearLeap(uint32_t year);
  *      of its execution. i.e. it is not thread safe.
  *
  =============================================================================*/
-extern Status tmInSeconds(uint32_t *tmInSecs, struct tm t);
+Status tmInSeconds(uint32_t *tmInSecs, struct tm t);
 
 /*=============================================================================
  *
@@ -134,11 +137,36 @@ extern Status tmInSeconds(uint32_t *tmInSecs, struct tm t);
  *      of its execution. i.e. it is not thread safe.
  *
  =============================================================================*/
-extern Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs);
+Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs);
 
-/*
- * http://mathforum.org/dr.math/faq/faq.calendar.html
- * Calculates the day of the week utilizing the Key Value Method (instead of the Zeller's Rule).
-*/
-extern uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day);
+/*=============================================================================
+ *
+ * dayOfWeek: Given any date, yyyy, mm, dd it will return the day of the week.
+ *
+ * year: 	represents the year in yyyy format
+ * month: 	represents the  month of the year in mm format, Jan=0, Feb=1..etc
+ * day:		represents the day of the week in dd format 1...31
+ * wday:	represents the day of the week in numerical format i.e. Sun=0 etc.
+ *
+ * Return: If successful it returns NOERROR(0) otherwise any other value. The
+ *         value of wday is undefined if returned failure.
+ *
+ * Notes:
+ *  o - Epoch is set at 1970-1-1, 00:00:00
+ *
+ *  o - This function assumes the caller will ensure atomicity for the durtion
+ *      of its execution. i.e. it is not thread safe.
+ *
+ *  o - http://mathforum.org/dr.math/faq/faq.calendar.html
+ *      Calculates the day of the week utilizing the Key Value Method
+ *      (instead of the Zeller's Rule).
+ *
+ =============================================================================*/
+Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

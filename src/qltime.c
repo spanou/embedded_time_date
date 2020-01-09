@@ -57,18 +57,13 @@ static const uint32_t centuryCode[] = {
 };
 
 typedef enum _centuryRangeStatus {
-    LOW_RANGE = -1,
-    HIGH_RANGE = -2,
+    RANGE_LOW = -1,
+    RANGE_HIGH = -2,
     RANGE_1700s = 0,
     RANGE_1800s = 1,
     RANGE_1900s = 2,
     RANGE_2000s = 3
 } RangeStatus;
-
-/*
-static const int32_t LOWER_RANGE = -1;
-static const int32_t HIGHER_RANGE = -2;
-*/
 
 static uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec);
@@ -167,26 +162,28 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
 
     t->tm_yday = daysFromSec(remainingTimeInSec, &remainingTimeInSec);
 
-    t->tm_mon = monthFromDayOfYear(t->tm_yday,
-        &daysRemaining, isYearLeap(t->tm_year + 1900));
+    t->tm_mon = monthFromDayOfYear(t->tm_yday, &daysRemaining,
+        isYearLeap(t->tm_year + 1900));
+
     t->tm_mday = daysRemaining;
 
     t->tm_hour = hoursFromSec(remainingTimeInSec, &remainingTimeInSec);
     t->tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
     t->tm_sec = remainingTimeInSec;
 
-    t->tm_wday = dayOfWeek((t->tm_year + 1900), t->tm_mon, t->tm_mday);
+    dayOfWeek((t->tm_year + 1900), t->tm_mon, t->tm_mday,
+        (uint8_t*)&t->tm_wday);
 
     return(NOERROR);
 }
 
-/*
- * http://mathforum.org/dr.math/faq/faq.calendar.html
- * Calculates the day of the week utilizing the Key Value Method (instead of the Zeller's Rule).
-*/
-uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
+Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
 
     uint32_t x = ((year % 100) / 4) + day;
+
+    if(wday == NULL){
+        return(-INVLDPTR);
+    }
 
     x += monthToValue(month);
 
@@ -199,9 +196,10 @@ uint8_t dayOfWeek(uint32_t year, uint8_t month, uint8_t day){
     x = (x%7);
 
     /* Value of 1 means Sunday, value of 0 means Saturday */
-    return((x)?(x-1):Sat);
-}
+    *wday = (x)?(x-1):Sat;
 
+    return(NOERROR);
+}
 
 static RangeStatus isCenturyInRange(uint32_t year){
     uint32_t reqCentury = year/100;
@@ -209,10 +207,10 @@ static RangeStatus isCenturyInRange(uint32_t year){
 
 
     if(reqCentury > centuries[RANGE_2000s])
-        return(HIGH_RANGE);
+        return(RANGE_HIGH);
 
     if(reqCentury < centuries[RANGE_1700s])
-        return(LOW_RANGE);
+        return(RANGE_LOW);
 
     for(i=0; i < 4; i++){
         if(centuries[i] == reqCentury){
@@ -230,9 +228,9 @@ static uint32_t yearCode(uint32_t year){
 
     while(code < 0){
 
-        if(code == HIGH_RANGE){
+        if(code == RANGE_HIGH){
             yearCache -= 400;
-        } else if (code == LOW_RANGE){
+        } else if (code == RANGE_LOW){
             yearCache += 400;
         }
 
@@ -241,7 +239,6 @@ static uint32_t yearCode(uint32_t year){
     /*  TODO: Need to fix the types and possiblity of getting a negative value */
     return(centuryToCode(code));
 }
-
 
 uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec){
@@ -287,7 +284,9 @@ uint32_t minsFromSec(const uint32_t timeInSeconds,
     return(timeInSeconds / secondsInMin);
 }
 
-uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining, bool isYearLeap){
+uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining,
+    bool isYearLeap){
+
     uint32_t i;
     uint32_t totalDayCount = 0;
     uint8_t monInDays = 0;
@@ -295,7 +294,8 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining, bool is
 
     for(i=0; i<12; i++){
 
-        monInDays = ((i==1) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];
+        monInDays =
+            ((i==Feb) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];
 
         if((totalDayCount + monInDays) >= dayOfYear){
             *daysRemaining = dayOfYear - totalDayCount;
