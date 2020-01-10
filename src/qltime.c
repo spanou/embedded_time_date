@@ -29,6 +29,7 @@
 #include<string.h>
 #include<stdint.h>
 #include<stdbool.h>
+
 #include "qltime.h"
 
 static const uint8_t monDayCount[] = {
@@ -57,13 +58,17 @@ static const uint32_t centuryCode[] = {
 };
 
 typedef enum _centuryRangeStatus {
-    RANGE_LOW = -1,
-    RANGE_HIGH = -2,
+    LOWER_RANGE = -1,
+    HIGHER_RANGE = -2,
+    IN_RANGE = 0
+} CenturyRangeStatus;
+
+typedef enum _centuryRangeIndex {
     RANGE_1700s = 0,
     RANGE_1800s = 1,
     RANGE_1900s = 2,
     RANGE_2000s = 3
-} RangeStatus;
+} CenturyRangeIndex;
 
 static uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec);
@@ -81,10 +86,10 @@ static uint32_t monthFromDayOfYear(const uint32_t dayOfYear,
     uint32_t* daysRemaining,
     bool isYearLeap);
 
-static uint32_t yearCode(uint32_t year);
+static uint8_t yearInCode(uint32_t year);
 
 static INLINE uint8_t monthToValue(uint8_t month){
-    return((month > 11)?0:monOfYearValue[month]);
+    return((month > (numberOfMonthsInYear-1))?0:monOfYearValue[month]);
 }
 
 static INLINE const uint32_t centuryToCode(int32_t idx){
@@ -94,11 +99,11 @@ static INLINE const uint32_t centuryToCode(int32_t idx){
 bool isYearLeap(uint32_t year) {
     bool ret = false;
 
-    if( (0 == (year % 4)) ) {
+    if( (0 == (year % leapYearCount)) ) {
         ret = true;
-        if(0 == (year % 100)){
+        if(0 == (year % centuryInYears)){
             ret = false;
-            if(0 == (year % 400)){
+            if(0 == (year % quaterCentenary)){
                 ret = true;
             }
         }
@@ -114,7 +119,7 @@ Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
         - epochYear;
 
     /* Count all the leap years since the epoch */
-    uint32_t leapYearCount = 0;
+    uint32_t leapYearCounter = 0;
     uint32_t i;
 
     if(tmInSecs == NULL){
@@ -125,7 +130,7 @@ Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
         uint32_t year = epochYear + i;
         /* Is this a leap year ? */
         if(isYearLeap(year)){
-            ++leapYearCount;
+            ++leapYearCounter;
         }
     }
 
@@ -134,7 +139,7 @@ Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
      * 1970 + the additional leap days.
      */
     *tmInSecs = ((secondsInYear * yearsInTotal) +
-        (leapYearCount * secondsInDay));
+        (leapYearCounter * secondsInDay));
     /* The time in seconds for all the days for the current year */
     *tmInSecs += (t.tm_yday * secondsInDay);
     /* The time in seconds for all the hours in the current day */
@@ -158,12 +163,12 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
     }
 
     t->tm_year = (yearsSinceEpoch(tmInSecs,
-        &remainingTimeInSec) + 1970) - 1900;
+        &remainingTimeInSec) + epochYear) - yearInStructTm;
 
     t->tm_yday = daysFromSec(remainingTimeInSec, &remainingTimeInSec);
 
     t->tm_mon = monthFromDayOfYear(t->tm_yday, &daysRemaining,
-        isYearLeap(t->tm_year + 1900));
+        isYearLeap(t->tm_year + yearInStructTm));
 
     t->tm_mday = daysRemaining;
 
@@ -171,7 +176,7 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
     t->tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
     t->tm_sec = remainingTimeInSec;
 
-    dayOfWeek((t->tm_year + 1900), t->tm_mon, t->tm_mday,
+    dayOfWeek((t->tm_year + yearInStructTm), t->tm_mon, t->tm_mday,
         (uint8_t*)&t->tm_wday);
 
     return(NOERROR);
@@ -179,7 +184,7 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
 
 Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
 
-    uint32_t x = ((year % 100) / 4) + day;
+    uint32_t x = ((year % centuryInYears) / leapYearCount) + day;
 
     if(wday == NULL){
         return(-INVLDPTR);
@@ -187,12 +192,12 @@ Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
 
     x += monthToValue(month);
 
-    if(true == isYearLeap(year) && (month <= 1)) {
+    if(true == isYearLeap(year) && (month <= Feb)) {
         x -= 1 ;
     }
 
-    x += yearCode(year);
-    x += (year %100);
+    x += yearInCode(year);
+    x += (year %centuryInYears);
     x = (x%7);
 
     /* Value of 1 means Sunday, value of 0 means Saturday */
@@ -201,42 +206,43 @@ Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
     return(NOERROR);
 }
 
-static RangeStatus isCenturyInRange(uint32_t year){
-    uint32_t reqCentury = year/100;
-    uint8_t i = 0;
-
+static CenturyRangeStatus isCenturyInRange(uint32_t year){
+    uint32_t reqCentury = year/centuryInYears;
 
     if(reqCentury > centuries[RANGE_2000s])
-        return(RANGE_HIGH);
+        return(HIGHER_RANGE);
 
     if(reqCentury < centuries[RANGE_1700s])
-        return(RANGE_LOW);
-
-    for(i=0; i < 4; i++){
-        if(centuries[i] == reqCentury){
-            return(i);
-        }
-    }
+        return(LOWER_RANGE);
 
     return(0); /*Will never reach this point*/
 }
 
-static uint32_t yearCode(uint32_t year){
+static uint8_t yearInCode(uint32_t year){
 
-    int32_t code = isCenturyInRange(year);
+    int8_t code = isCenturyInRange(year);
     uint32_t yearCache = year;
+    uint8_t i = 0;
 
+    /* Move Up or Down by 400 years to get into range*/
     while(code < 0){
 
-        if(code == RANGE_HIGH){
-            yearCache -= 400;
-        } else if (code == RANGE_LOW){
-            yearCache += 400;
+        if(code == HIGHER_RANGE){
+            yearCache -= quaterCentenary;
+        } else if (code == LOWER_RANGE){
+            yearCache += quaterCentenary;
         }
-
         code = isCenturyInRange(yearCache);
     }
-    /*  TODO: Need to fix the types and possiblity of getting a negative value */
+
+    /*Since we are now in range determine the code*/
+    for(i=0; i < 4; i++){
+        if(centuries[i] == (yearCache/centuryInYears)){
+            code = i;
+            break;
+        }
+    }
+
     return(centuryToCode(code));
 }
 
@@ -292,7 +298,7 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining,
     uint8_t monInDays = 0;
     uint32_t monthOfYear = 0;
 
-    for(i=0; i<12; i++){
+    for(i=0; i<numberOfMonthsInYear; i++){
 
         monInDays =
             ((i==Feb) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];

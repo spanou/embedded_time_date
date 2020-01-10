@@ -66,3 +66,6 @@ printinfo:
 .PHONY: clean
 clean:
 	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o
+
+.PHONY: rebuild
+rebuild: clean all

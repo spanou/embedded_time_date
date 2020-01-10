@@ -50,6 +50,10 @@ const static uint32_t yearInStructTm = 1900;
 const static uint32_t startYearRange = 1600;
 const static uint32_t endYearRange = 2400;
 const static uint32_t tableRowSize = 10;
+const static uint32_t centuryInYears = 100;
+const static uint8_t leapYearCount = 4;
+const static uint16_t quaterCentenary = 400;
+const static uint8_t numberOfMonthsInYear = 12;
 
 enum monthsOfYear{
     Jan = 0, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
