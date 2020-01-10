@@ -47,12 +47,12 @@ static const uint8_t monOfYearValue[] = {
       1,   4,   4,   0,   2,   5,   0,   3,   6,   1,   4,   6
 };
 
-static const uint32_t centuries[] = {
+static const uint8_t centuries[] = {
     /*1700, 1800, 1900, 2000*/
       17,   18,   19,   20
 };
 
-static const uint32_t centuryCode[] = {
+static const uint8_t centuryCode[] = {
     /*1700, 1800, 1900, 2000*/
       4,    2,    0,    6
 };
@@ -215,7 +215,7 @@ static CenturyRangeStatus isCenturyInRange(uint32_t year){
     if(reqCentury < centuries[RANGE_1700s])
         return(LOWER_RANGE);
 
-    return(0); /*Will never reach this point*/
+    return(IN_RANGE);
 }
 
 static uint8_t yearInCode(uint32_t year){
