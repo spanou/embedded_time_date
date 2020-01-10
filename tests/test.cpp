@@ -32,6 +32,9 @@
 
 #include "../include/qltime.h"
 
+
+#define TBLROW_SZ 10                /*Table Row Size For Printouts*/
+
 static const char* monStrings[] = {
     "January", "February", "March", "April","May", "June", "July", "August",
     "September", "October", "November", "December"
@@ -45,7 +48,6 @@ static const char* monAbrvStrings[] = {
 static const char* dayOfWeekStrings[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 };
-
 
 bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     const uint32_t goldenLeapYearTableSz,
@@ -120,7 +122,7 @@ int main(int argc, char* argv[]){
     }
 
     printf("In YYYY-MM-DD, hh:mm:ss : %u-%d-%d, %d:%d:%d\n",
-        yearInStructTm+theTime->tm_year,
+        YEAROFFSET_TM+theTime->tm_year,
         theTime->tm_mon +1,
         theTime->tm_mday,
         theTime->tm_hour,
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]){
 
     leapYearChecker( leapYearGoldenTestTable,
         sizeof(leapYearGoldenTestTable)/sizeof(uint32_t),
-        startYearRange, endYearRange);
+        STARTYEAR_CODE_RANGE, ENDYEAR_CODE_RANGE);
 
     struct tm itsTime = {0};
 
@@ -189,7 +191,7 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     printf("\n");
     printf("========== Printing Golden Table ==========\n");
     printf("Table Size = %u \n", goldenLeapYearTableSz);
-    printTable(goldenLeapYearTable, goldenLeapYearTableSz, tableRowSize);
+    printTable(goldenLeapYearTable, goldenLeapYearTableSz, TBLROW_SZ);
     printf("\n");
 
     /* Calculate and Print the Leap Year Table */
@@ -203,12 +205,13 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     printf("\n");
     printf("========== Printing Calculated Table ==========\n");
     printf("Table Size = %u \n", derivedLeapYearTableIndex);
-    printTable(derivedLeapYearTable, derivedLeapYearTableIndex, tableRowSize);
+    printTable(derivedLeapYearTable, derivedLeapYearTableIndex, TBLROW_SZ);
     printf("\n");
 
     /* Size Check for the tables */
     if(goldenLeapYearTableSz != derivedLeapYearTableIndex){
-        printf("Error: Golden Leap Table Size = %u Calculated Leap Year Table Size = %u\n",
+        printf("Error: Golden Leap Table Size = %u Calculated Leap Year "
+            "Table Size = %u\n",
             goldenLeapYearTableSz, derivedLeapYearTableIndex);
 
             ret = false;
@@ -221,7 +224,8 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
         if(0 != memcmp((const void*)goldenLeapYearTable,
             (const void*)derivedLeapYearTable,
             goldenLeapYearTableSz)) {
-            printf("Error: Golden Leap Table doesn't match Calculated Leap Table\n");
+            printf("Error: Golden Leap Table doesn't match Calculated Leap"
+                " Table\n");
             ret = false;
         } else {
             ret = true;
@@ -258,7 +262,8 @@ bool dayOfTheWeekChecker(void){
 
     for(i=0; i<7; i++){
 
-        dayOfWeek(checkTable[i].year, checkTable[i].month, checkTable[i].day, &dayNum);
+        dayOfWeek(checkTable[i].year, checkTable[i].month, checkTable[i].day,
+            &dayNum);
         day = dayOfWeekToString(dayNum);
 
         if(0 != strcmp(day, checkTable[i].dayOfWeek)){

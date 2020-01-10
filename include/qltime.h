@@ -40,20 +40,21 @@
 	#define INLINE
 #endif
 
-const static uint32_t epochYear = 1970;
-const static uint32_t secondsInDay = 86400;
-const static uint32_t secondsInYear = 31536000;
-const static uint32_t secondsInLeapYear = 31622400;
-const static uint32_t secondsInHour = 3600;
-const static uint32_t secondsInMin = 60;
-const static uint32_t yearInStructTm = 1900;
-const static uint32_t startYearRange = 1600;
-const static uint32_t endYearRange = 2400;
-const static uint32_t tableRowSize = 10;
-const static uint32_t centuryInYears = 100;
-const static uint8_t leapYearCount = 4;
-const static uint16_t quaterCentenary = 400;
-const static uint8_t numberOfMonthsInYear = 12;
+#define EPOCH 1970					/*Epoch Year*/
+#define NSEC_DAY 86400				/*Number of Seconds In A Day*/
+#define NSEC_YEAR 31536000			/*Number of Seconds In A Year*/
+#define NSEC_LEAPYEAR 31622400		/*Number of Seconds In A Leap Year*/
+#define NSEC_HOUR 360				/*Number of Seconds In An Hour*/
+#define NSEC_MIN 60					/*Number of Seconds In A Minute*/
+#define YEAROFFSET_TM 1900			/*The Year Offset in a struct tm*/
+#define STARTYEAR_CODE_RANGE 1600	/*Start Year Code Range*/
+#define ENDYEAR_CODE_RANGE 2400		/*End Year Code Range*/
+#define NYEAR_CENTURY 100			/*Number Of Years In A Century*/
+#define NLEAP_YEAR 4				/*Typical Leap Year Interval*/
+#define QTR_CENTENARY 400			/*Number Of years In A Qatercentury*/
+#define NMONTH_YEAR 12				/*Number Of Months In A Year*/
+#define NDAY_WEEK 7					/*Number Of Days In A Week*/
+
 
 enum monthsOfYear{
     Jan = 0, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec

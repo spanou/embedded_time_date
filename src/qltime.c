@@ -89,7 +89,7 @@ static uint32_t monthFromDayOfYear(const uint32_t dayOfYear,
 static uint8_t yearInCode(uint32_t year);
 
 static INLINE uint8_t monthToValue(uint8_t month){
-    return((month > (numberOfMonthsInYear-1))?0:monOfYearValue[month]);
+    return((month > (NMONTH_YEAR-1))?0:monOfYearValue[month]);
 }
 
 static INLINE const uint32_t centuryToCode(int32_t idx){
@@ -99,11 +99,11 @@ static INLINE const uint32_t centuryToCode(int32_t idx){
 bool isYearLeap(uint32_t year) {
     bool ret = false;
 
-    if( (0 == (year % leapYearCount)) ) {
+    if((0 == (year % NLEAP_YEAR))) {
         ret = true;
-        if(0 == (year % centuryInYears)){
+        if(0 == (year % NYEAR_CENTURY)){
             ret = false;
-            if(0 == (year % quaterCentenary)){
+            if(0 == (year % QTR_CENTENARY)){
                 ret = true;
             }
         }
@@ -115,8 +115,8 @@ bool isYearLeap(uint32_t year) {
 Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
 
     /* Current Year - 1970 */
-    const uint32_t yearsInTotal = (t.tm_year + yearInStructTm)
-        - epochYear;
+    const uint32_t yearsInTotal = (t.tm_year + YEAROFFSET_TM)
+        - EPOCH;
 
     /* Count all the leap years since the epoch */
     uint32_t leapYearCounter = 0;
@@ -127,7 +127,7 @@ Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
     }
 
     for(i = 0; i < yearsInTotal; i++){
-        uint32_t year = epochYear + i;
+        uint32_t year = EPOCH + i;
         /* Is this a leap year ? */
         if(isYearLeap(year)){
             ++leapYearCounter;
@@ -138,14 +138,14 @@ Status tmInSeconds(uint32_t *tmInSecs, struct tm t){
      * The time in seconds for all the years since
      * 1970 + the additional leap days.
      */
-    *tmInSecs = ((secondsInYear * yearsInTotal) +
-        (leapYearCounter * secondsInDay));
+    *tmInSecs = ((NSEC_YEAR * yearsInTotal) +
+        (leapYearCounter * NSEC_DAY));
     /* The time in seconds for all the days for the current year */
-    *tmInSecs += (t.tm_yday * secondsInDay);
+    *tmInSecs += (t.tm_yday * NSEC_DAY);
     /* The time in seconds for all the hours in the current day */
-    *tmInSecs += (t.tm_hour * secondsInHour);
+    *tmInSecs += (t.tm_hour * NSEC_HOUR);
     /* The time in seconds for the minutes since the current hour */
-    *tmInSecs += (t.tm_min * secondsInMin);
+    *tmInSecs += (t.tm_min * NSEC_MIN);
     /* The time in seconds from the current minute */
     *tmInSecs += t.tm_sec;
 
@@ -163,12 +163,12 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
     }
 
     t->tm_year = (yearsSinceEpoch(tmInSecs,
-        &remainingTimeInSec) + epochYear) - yearInStructTm;
+        &remainingTimeInSec) + EPOCH) - YEAROFFSET_TM;
 
     t->tm_yday = daysFromSec(remainingTimeInSec, &remainingTimeInSec);
 
     t->tm_mon = monthFromDayOfYear(t->tm_yday, &daysRemaining,
-        isYearLeap(t->tm_year + yearInStructTm));
+        isYearLeap(t->tm_year + YEAROFFSET_TM));
 
     t->tm_mday = daysRemaining;
 
@@ -176,7 +176,7 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
     t->tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
     t->tm_sec = remainingTimeInSec;
 
-    dayOfWeek((t->tm_year + yearInStructTm), t->tm_mon, t->tm_mday,
+    dayOfWeek((t->tm_year + YEAROFFSET_TM), t->tm_mon, t->tm_mday,
         (uint8_t*)&t->tm_wday);
 
     return(NOERROR);
@@ -184,7 +184,7 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
 
 Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
 
-    uint32_t x = ((year % centuryInYears) / leapYearCount) + day;
+    uint32_t x = ((year % NYEAR_CENTURY) / NLEAP_YEAR) + day;
 
     if(wday == NULL){
         return(-INVLDPTR);
@@ -197,8 +197,8 @@ Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
     }
 
     x += yearInCode(year);
-    x += (year %centuryInYears);
-    x = (x%7);
+    x += (year % NYEAR_CENTURY);
+    x = (x % NDAY_WEEK);
 
     /* Value of 1 means Sunday, value of 0 means Saturday */
     *wday = (x)?(x-1):Sat;
@@ -207,7 +207,7 @@ Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
 }
 
 static CenturyRangeStatus isCenturyInRange(uint32_t year){
-    uint32_t reqCentury = year/centuryInYears;
+    uint32_t reqCentury = year/NYEAR_CENTURY;
 
     if(reqCentury > centuries[RANGE_2000s])
         return(HIGHER_RANGE);
@@ -228,16 +228,16 @@ static uint8_t yearInCode(uint32_t year){
     while(code < 0){
 
         if(code == HIGHER_RANGE){
-            yearCache -= quaterCentenary;
+            yearCache -= QTR_CENTENARY;
         } else if (code == LOWER_RANGE){
-            yearCache += quaterCentenary;
+            yearCache += QTR_CENTENARY;
         }
         code = isCenturyInRange(yearCache);
     }
 
     /*Since we are now in range determine the code*/
     for(i=0; i < 4; i++){
-        if(centuries[i] == (yearCache/centuryInYears)){
+        if(centuries[i] == (yearCache/NYEAR_CENTURY)){
             code = i;
             break;
         }
@@ -252,12 +252,12 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t yearCount = 0;
     *remainingTimeInSec = timeInSeconds;
 
-    while(*remainingTimeInSec >= secondsInLeapYear){
+    while(*remainingTimeInSec >= NSEC_LEAPYEAR){
 
-        if(isYearLeap(epochYear+yearCount)){
-            *remainingTimeInSec -= secondsInYear + secondsInDay;
+        if(isYearLeap(EPOCH+yearCount)){
+            *remainingTimeInSec -= NSEC_YEAR + NSEC_DAY;
         } else {
-            *remainingTimeInSec -= secondsInYear;
+            *remainingTimeInSec -= NSEC_YEAR;
         }
 
         ++yearCount;
@@ -269,25 +269,25 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
 uint32_t daysFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
-    *remainingTimeInSec= timeInSeconds % secondsInDay;
+    *remainingTimeInSec= timeInSeconds % NSEC_DAY;
     /* Days don't start from 0 */
-    return((timeInSeconds / secondsInDay)+1);
+    return((timeInSeconds / NSEC_DAY)+1);
 }
 
 uint32_t hoursFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
-    *remainingTimeInSec= timeInSeconds % secondsInHour;
+    *remainingTimeInSec= timeInSeconds % NSEC_HOUR;
 
-    return(timeInSeconds / secondsInHour);
+    return(timeInSeconds / NSEC_HOUR);
 }
 
 uint32_t minsFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
-    *remainingTimeInSec= timeInSeconds % secondsInMin;
+    *remainingTimeInSec= timeInSeconds % NSEC_MIN;
 
-    return(timeInSeconds / secondsInMin);
+    return(timeInSeconds / NSEC_MIN);
 }
 
 uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining,
@@ -298,7 +298,7 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining,
     uint8_t monInDays = 0;
     uint32_t monthOfYear = 0;
 
-    for(i=0; i<numberOfMonthsInYear; i++){
+    for(i=0; i<NMONTH_YEAR; i++){
 
         monInDays =
             ((i==Feb) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];
