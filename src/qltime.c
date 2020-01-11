@@ -250,12 +250,15 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec){
 
     uint32_t yearCount = 0;
+    /*uint32_t leapYearCount = 0;*/
+
     *remainingTimeInSec = timeInSeconds;
 
     while(*remainingTimeInSec >= NSEC_LEAPYEAR){
 
         if(isYearLeap(EPOCH+yearCount)){
             *remainingTimeInSec -= NSEC_YEAR + NSEC_DAY;
+            /*++leapYearCount;*/
         } else {
             *remainingTimeInSec -= NSEC_YEAR;
         }
@@ -263,6 +266,11 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
         ++yearCount;
     }
 
+    /*
+    printf("(%d) %s::%s -> Total Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, yearCount);
+    printf("(%d) %s::%s -> Leap Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, leapYearCount);
+    printf("(%d) %s::%s -> Non Leap Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, yearCount-leapYearCount);
+    */
     return(yearCount);
 }
 
@@ -305,7 +313,7 @@ uint32_t monthFromDayOfYear(uint32_t dayOfYear, uint32_t* daysRemaining,
             ((i==Feb) && (true==isYearLeap))?(monDayCount[i] +1):monDayCount[i];
 
         if((totalDayCount + monInDays) >= dayOfYear){
-            *daysRemaining = dayOfYear - totalDayCount;
+            *daysRemaining = dayOfYear - totalDayCount +1;
             monthOfYear = i;
             break;
         } else {

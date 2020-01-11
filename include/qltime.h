@@ -44,7 +44,7 @@
 #define NSEC_DAY 86400				/*Number of Seconds In A Day*/
 #define NSEC_YEAR 31536000			/*Number of Seconds In A Year*/
 #define NSEC_LEAPYEAR 31622400		/*Number of Seconds In A Leap Year*/
-#define NSEC_HOUR 360				/*Number of Seconds In An Hour*/
+#define NSEC_HOUR 3600				/*Number of Seconds In An Hour*/
 #define NSEC_MIN 60					/*Number of Seconds In A Minute*/
 #define YEAROFFSET_TM 1900			/*The Year Offset in a struct tm*/
 #define STARTYEAR_CODE_RANGE 1600	/*Start Year Code Range*/
