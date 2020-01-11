@@ -39,6 +39,7 @@ C_SRC?= $(wildcard ./src/*.c)
 LFLAGS= -o
 
 OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
+DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -46,7 +47,13 @@ OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(EXECUTABLE): $(OBJS)
+%.d:%.c
+	$(CC) $(CFLAGS) -MF"$@" -MG -MM -MP -MT"$@" -MT"$(<:.c=.o)" "$<"
+
+%.d:%.cpp
+	$(CXX) $(CXXFLAGS) -MF"$@" -MG -MM -MP -MT"$@" -MT"$(<:.cpp=.o)" "$<"
+
+$(EXECUTABLE): $(OBJS) $(DEPS)
 	$(CXX) $(OBJS) $(LFLAGS) $@
 
 
@@ -65,7 +72,7 @@ printinfo:
 
 .PHONY: clean
 clean:
-	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o
+	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d
 
 .PHONY: rebuild
 rebuild: clean all

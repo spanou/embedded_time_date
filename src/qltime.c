@@ -271,7 +271,8 @@ uint32_t daysFromSec(const uint32_t timeInSeconds,
 
     *remainingTimeInSec= timeInSeconds % NSEC_DAY;
     /* Days don't start from 0 */
-    return((timeInSeconds / NSEC_DAY)+1);
+    /*return((timeInSeconds / NSEC_DAY)+1);*/
+    return((timeInSeconds / NSEC_DAY));
 }
 
 uint32_t hoursFromSec(const uint32_t timeInSeconds,
