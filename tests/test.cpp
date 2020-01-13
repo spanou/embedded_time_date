@@ -184,7 +184,7 @@ int main(int argc, char* argv[]){
     //     vectorTime.tm_yday);
     // }
 
-    testTimeStampToStructTm(timeStampTestVectors, 9);
+    testTimeStampToStructTm(timeStampTestVectors, 10);
 
     return(0);
 }

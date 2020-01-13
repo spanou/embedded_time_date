@@ -254,7 +254,7 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
 
     *remainingTimeInSec = timeInSeconds;
 
-    while(*remainingTimeInSec >= NSEC_LEAPYEAR){
+    while(*remainingTimeInSec >= NSEC_YEAR){
 
         if(isYearLeap(EPOCH+yearCount)){
             *remainingTimeInSec -= NSEC_YEAR + NSEC_DAY;
