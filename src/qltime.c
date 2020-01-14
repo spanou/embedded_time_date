@@ -32,6 +32,7 @@
 #include<stdbool.h>
 
 #include "qltime.h"
+#include "qllogger.h"
 
 static const uint8_t monDayCount[] = {
     /*Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec*/
@@ -251,7 +252,7 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec){
 
     uint32_t yearCount = 0;
-    /*uint32_t leapYearCount = 0;*/
+    uint32_t leapYearCount = 0;
 
     *remainingTimeInSec = timeInSeconds;
 
@@ -259,7 +260,7 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
 
         if(isYearLeap(EPOCH+yearCount)){
             *remainingTimeInSec -= NSEC_YEAR + NSEC_DAY;
-            /*++leapYearCount;*/
+            ++leapYearCount;
         } else {
             *remainingTimeInSec -= NSEC_YEAR;
         }
@@ -267,11 +268,15 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
         ++yearCount;
     }
 
-    /*
-    printf("(%d) %s::%s -> Total Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, yearCount);
-    printf("(%d) %s::%s -> Leap Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, leapYearCount);
-    printf("(%d) %s::%s -> Non Leap Year Count: %u\n", __LINE__, __FILE__, __FUNCTION__, yearCount-leapYearCount);
-    */
+    qlLogger(INFO, "(%d) %s::%s -> Total Year Count: %u\n",
+        __LINE__, __FILE__, __FUNCTION__, yearCount);
+
+    qlLogger(INFO, "(%d) %s::%s -> Leap Year Count: %u\n",
+        __LINE__, __FILE__, __FUNCTION__, leapYearCount);
+
+    qlLogger(INFO, "(%d) %s::%s -> Non Leap Year Count: %u\n",
+        __LINE__, __FILE__, __FUNCTION__, yearCount-leapYearCount);
+
     return(yearCount);
 }
 

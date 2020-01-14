@@ -29,12 +29,25 @@ EXECUTABLE=rtc_validation
 
 VPATH= src/ tests/ include/
 
+# LOG_LEVEL values:
+#
+#  NONE=1,
+#  INFO=2,
+#  WARNING=4,
+#  ERROR=8,
+#  CRITICAL=16
+
+
+# LOG_MODE values:
+#  FLAG=0
+#  LEVEL=1
+
 CXX= g++
-CXXFLAGS= -Wall -std=c++11 -g -I ./include -I ../include
+CXXFLAGS= -Wall -std=c++11 -g -I ./include -I ../include -D LOG_LEVEL=4 -D LOG_MODE=1
 CPP_SRC?= $(wildcard ./tests/*.cpp)
 
 CC= gcc
-CFLAGS=-Wall -g -I ./include -I ../include -std=c90
+CFLAGS=-Wall -g -I ./include -I ../include -std=c90 -D LOG_LEVEL=4 -D LOG_MODE=1
 C_SRC?= $(wildcard ./src/*.c)
 
 LFLAGS= -o
