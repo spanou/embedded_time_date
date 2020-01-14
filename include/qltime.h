@@ -16,13 +16,14 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *===========================================================================*/
 #ifndef __QL_TIME_H__
 #define __QL_TIME_H__
@@ -31,29 +32,29 @@
  * if -ansi or -std=c90, inline is not defined but __inline__ is.
  */
 #ifdef __STDC_VERSION__
-	#if(__STDC_VERSION__ >= 199901L)
-		#define INLINE inline
-	#else
-		#define INLINE __inline__
-	#endif
+    #if(__STDC_VERSION__ >= 199901L)
+        #define INLINE inline
+    #else
+        #define INLINE __inline__
+    #endif
 #else
-	#define INLINE
+    #define INLINE
 #endif
 
-#define EPOCH 1970					/*Epoch Year*/
-#define NSEC_DAY 86400				/*Number of Seconds In A Day*/
-#define NSEC_YEAR 31536000			/*Number of Seconds In A Year*/
-#define NSEC_LEAPYEAR 31622400		/*Number of Seconds In A Leap Year*/
-#define NSEC_HOUR 3600				/*Number of Seconds In An Hour*/
-#define NSEC_MIN 60					/*Number of Seconds In A Minute*/
-#define YEAROFFSET_TM 1900			/*The Year Offset in a struct tm*/
-#define STARTYEAR_CODE_RANGE 1600	/*Start Year Code Range*/
-#define ENDYEAR_CODE_RANGE 2400		/*End Year Code Range*/
-#define NYEAR_CENTURY 100			/*Number Of Years In A Century*/
-#define NLEAP_YEAR 4				/*Typical Leap Year Interval*/
-#define QTR_CENTENARY 400			/*Number Of years In A Qatercentury*/
-#define NMONTH_YEAR 12				/*Number Of Months In A Year*/
-#define NDAY_WEEK 7					/*Number Of Days In A Week*/
+#define EPOCH 1970                  /*Epoch Year*/
+#define NSEC_DAY 86400              /*Number of Seconds In A Day*/
+#define NSEC_YEAR 31536000          /*Number of Seconds In A Year*/
+#define NSEC_LEAPYEAR 31622400      /*Number of Seconds In A Leap Year*/
+#define NSEC_HOUR 3600              /*Number of Seconds In An Hour*/
+#define NSEC_MIN 60                 /*Number of Seconds In A Minute*/
+#define YEAROFFSET_TM 1900          /*The Year Offset in a struct tm*/
+#define STARTYEAR_CODE_RANGE 1600   /*Start Year Code Range*/
+#define ENDYEAR_CODE_RANGE 2400     /*End Year Code Range*/
+#define NYEAR_CENTURY 100           /*Number Of Years In A Century*/
+#define NLEAP_YEAR 4                /*Typical Leap Year Interval*/
+#define QTR_CENTENARY 400           /*Number Of years In A Qatercentury*/
+#define NMONTH_YEAR 12              /*Number Of Months In A Year*/
+#define NDAY_WEEK 7                 /*Number Of Days In A Week*/
 
 
 enum monthsOfYear{
@@ -65,8 +66,8 @@ enum daysOfWeek {
 };
 
 typedef enum _Status {
-	NOERROR = 0,
-	INVLDPTR = 1
+    NOERROR = 0,
+    INVLDPTR = 1
 } Status;
 
 #ifdef __cplusplus
@@ -148,10 +149,10 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs);
  *
  * dayOfWeek: Given any date, yyyy, mm, dd it will return the day of the week.
  *
- * year: 	represents the year in yyyy format
- * month: 	represents the  month of the year in mm format, Jan=0, Feb=1..etc
- * day:		represents the day of the week in dd format 1...31
- * wday:	represents the day of the week in numerical format i.e. Sun=0 etc.
+ * year:    represents the year in yyyy format
+ * month:   represents the  month of the year in mm format, Jan=0, Feb=1..etc
+ * day:     represents the day of the week in dd format 1...31
+ * wday:    represents the day of the week in numerical format i.e. Sun=0 etc.
  *
  * Return: If successful it returns NOERROR(0) otherwise any other value. The
  *         value of wday is undefined if returned failure.
