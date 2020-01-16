@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *===========================================================================*/
 #ifndef __QL_LOGGER_H__
-#define __QL_LOGGER_H_
+#define __QL_LOGGER_H__
 
 #ifdef __cplusplus
 extern "C" {

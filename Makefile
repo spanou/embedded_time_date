@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 EXECUTABLE=rtc_validation
+STATIC_LIB=rtc_validation.a
 
 VPATH= src/ tests/ include/
 
@@ -53,6 +54,10 @@ C_SRC?= $(wildcard ./src/*.c)
 
 LFLAGS= -o
 
+OBJS_LIB= $(C_SRC:.c=.o)
+HEADERS_LIB= $(wildcard ./include/*.h)
+LIB_FLAGS= rcs
+
 OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
 DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 
@@ -68,11 +73,14 @@ DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 %.d:%.cpp
 	$(CXX) $(CXXFLAGS) -MF"$@" -MG -MM -MP -MT"$@" -MT"$(<:.cpp=.o)" "$<"
 
+
 $(EXECUTABLE): $(OBJS) $(DEPS)
 	$(CXX) $(OBJS) $(LFLAGS) $@
 
+$(STATIC_LIB): $(OBJS_LIB) $(HEADERS_LIB)
+	$(AR) $(LIB_FLAGS) $@ $(OBJS_LIB) 
 
-all: $(EXECUTABLE)
+all: $(EXECUTABLE) $(STATIC_LIB)
 
 .PHONY: printinfo
 printinfo:
@@ -84,10 +92,12 @@ printinfo:
 	@echo $(CFLAGS)
 	@echo "LFLAGS ........................."
 	@echo $(LFLAGS)
+	@echo "AR.... ........................."
+	@echo $(AR)
 
 .PHONY: clean
 clean:
-	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d
+	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d *.a
 
 .PHONY: rebuild
 rebuild: clean all
