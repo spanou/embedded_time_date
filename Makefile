@@ -26,9 +26,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 EXECUTABLE=rtc_validation
-LIB_RTC=min_rtc
-STATIC_LIB=lib$(LIB_RTC).a
+LIB_RTC_NAME=min_rtc
+LIB_RTC_VER_MAJ=1
+LIB_RTC_VER_MIN=0
+LIB_RTC_VER_REL=0
+LIB_RTC_PREFIX=lib
 
+LIB_RTC_LINKER=$(LIB_RTC_PREFIX)$(LIB_RTC_NAME).so
+LIB_RTC_SONAME=$(LIB_RTC_LINKER).$(LIB_RTC_VER_MAJ)
+LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
+
+LN?=ln
 
 VPATH= src/ tests/ include/
 
@@ -54,7 +62,7 @@ CC= gcc
 CFLAGS=-Wall -g -I ./include -I ../include -std=c90 -D LOG_LEVEL=$(LOGL) -D LOG_MODE=$(LOGM)
 C_SRC?= $(wildcard ./src/*.c)
 
-LFLAGS= -o
+LFLAGS= -Wl,-rpath=. -o
 
 OBJS_LIB= $(C_SRC:.c=.o)
 HEADERS_LIB= $(wildcard ./include/*.h)
@@ -67,7 +75,7 @@ DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o:%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
 
 %.d:%.c
 	$(CC) $(CFLAGS) -M -MF"$@" $<
@@ -77,12 +85,21 @@ DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 
 
 $(EXECUTABLE): $(OBJS) $(DEPS) $(STATIC_LIB)
-	$(CXX) $(OBJS) $(LFLAGS) $@ -L. -l$(LIB_RTC)
+	$(CXX) $(OBJS) $(LFLAGS) $@ -L. -l$(LIB_RTC_NAME)
 
-$(STATIC_LIB): $(OBJS_LIB) $(HEADERS_LIB)
-	$(AR) $(LIB_FLAGS) $@ $(OBJS_LIB)
+$(LIB_RTC_REAL): $(OBJS_LIB) $(HEADERS_LIB)
+	$(CC) -shared -Wl,-h,$(LIB_RTC_SONAME) -o $@ $(OBJS_LIB)
 
-all: $(EXECUTABLE) $(STATIC_LIB)
+$(LIB_RTC_SONAME): $(LIB_RTC_REAL)
+	#ln -s $< $@
+	ldconfig -n -v .
+
+$(LIB_RTC_LINKER): $(LIB_RTC_SONAME)
+	ln -sf $< $@	
+
+#all: $(EXECUTABLE) $(LIB_RTC_REAL)
+#all: $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER)
+all: $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER) $(EXECUTABLE)
 
 .PHONY: printinfo
 printinfo:
@@ -94,12 +111,15 @@ printinfo:
 	@echo $(CFLAGS)
 	@echo "LFLAGS ........................."
 	@echo $(LFLAGS)
-	@echo "AR.... ........................."
+	@echo "AR.............................."
 	@echo $(AR)
+	@echo "LN.............................."
+	@echo $(LN)
 
 .PHONY: clean
 clean:
-	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d *.a
+	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d *.a 
+	$(RM) $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER)
 
 .PHONY: rebuild
 rebuild: clean all
