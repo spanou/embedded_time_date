@@ -26,7 +26,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 EXECUTABLE=rtc_validation
-STATIC_LIB=rtc_validation.a
+LIB_RTC=min_rtc
+STATIC_LIB=lib$(LIB_RTC).a
+
 
 VPATH= src/ tests/ include/
 
@@ -58,7 +60,7 @@ OBJS_LIB= $(C_SRC:.c=.o)
 HEADERS_LIB= $(wildcard ./include/*.h)
 LIB_FLAGS= rcs
 
-OBJS= $(CPP_SRC:.cpp=.o) $(C_SRC:.c=.o)
+OBJS= $(CPP_SRC:.cpp=.o)
 DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 
 %.o:%.cpp
@@ -68,17 +70,17 @@ DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.d:%.c
-	$(CC) $(CFLAGS) -MF"$@" -MG -MM -MP -MT"$@" -MT"$(<:.c=.o)" "$<"
+	$(CC) $(CFLAGS) -M -MF"$@" $<
 
 %.d:%.cpp
-	$(CXX) $(CXXFLAGS) -MF"$@" -MG -MM -MP -MT"$@" -MT"$(<:.cpp=.o)" "$<"
+	$(CXX) $(CXXFLAGS) -M -MF"$@" $<
 
 
-$(EXECUTABLE): $(OBJS) $(DEPS)
-	$(CXX) $(OBJS) $(LFLAGS) $@
+$(EXECUTABLE): $(OBJS) $(DEPS) $(STATIC_LIB)
+	$(CXX) $(OBJS) $(LFLAGS) $@ -L. -l$(LIB_RTC)
 
 $(STATIC_LIB): $(OBJS_LIB) $(HEADERS_LIB)
-	$(AR) $(LIB_FLAGS) $@ $(OBJS_LIB) 
+	$(AR) $(LIB_FLAGS) $@ $(OBJS_LIB)
 
 all: $(EXECUTABLE) $(STATIC_LIB)
 
