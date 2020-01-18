@@ -38,6 +38,40 @@ LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
 
 LN?=ln
 
+OSFLAG :=
+
+ifeq ($(OS),Windows_NT)
+    OSFLAG += -D WIN32
+    ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
+        OSFLAG += -D AMD64
+    else
+        ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+            OSFLAG += -D AMD64
+        endif
+        ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+            OSFLAG += -D IA32
+        endif
+    endif
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        OSFLAG += -D LINUX
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        OSFLAG += -D OSX
+    endif
+    UNAME_P := $(shell uname -p)
+    ifeq ($(UNAME_P),x86_64)
+        OSFLAG += -D AMD64
+    endif
+    ifneq ($(filter %86,$(UNAME_P)),)
+        OSFLAG += -D IA32
+    endif
+    ifneq ($(filter arm%,$(UNAME_P)),)
+        OSFLAG += -D ARM
+    endif
+endif
+
 VPATH= src/ tests/ include/
 
 # LOG_LEVEL values:
@@ -115,6 +149,8 @@ printinfo:
 	@echo $(AR)
 	@echo "LN.............................."
 	@echo $(LN)
+	@echo "OSFLAG.........................."
+	@echo $(OSFLAG)
 
 .PHONY: clean
 clean:
