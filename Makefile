@@ -25,6 +25,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
+
 EXECUTABLE=rtc_validation
 LIB_RTC_NAME=min_rtc
 LIB_RTC_VER_MAJ=1
@@ -159,3 +160,19 @@ clean:
 
 .PHONY: rebuild
 rebuild: clean all
+
+
+# -------------------------  TOP LEVEL MAKEFILE  -------------------------  
+# SUBDIRS += lib cpp-app c-app
+
+# all: $(SUBDIRS)
+# .PHONY: $(SUBDIRS)
+
+# $(SUBDIRS):
+	$(MAKE) -C $@
+
+# $(SUBDIRS:%=%-clean):
+	$(MAKE) -C $(@:-clean=) clean
+
+# clean: $(SUBDIRS:%=%-clean)
+# -------------------------  TOP LEVEL MAKEFILE  -------------------------  
