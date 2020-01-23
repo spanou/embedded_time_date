@@ -26,153 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-EXECUTABLE=rtc_validation
-LIB_RTC_NAME=min_rtc
-LIB_RTC_VER_MAJ=1
-LIB_RTC_VER_MIN=0
-LIB_RTC_VER_REL=0
-LIB_RTC_PREFIX=lib
+#SUBDIRS += lib/ tests/cpp/ tests/python/
+SUBDIRS += lib/
 
-LIB_RTC_LINKER=$(LIB_RTC_PREFIX)$(LIB_RTC_NAME).so
-LIB_RTC_SONAME=$(LIB_RTC_LINKER).$(LIB_RTC_VER_MAJ)
-LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
+all: $(SUBDIRS)
+.PHONY: $(SUBDIRS)
 
-LN?=ln
-
-OSFLAG :=
-
-ifeq ($(OS),Windows_NT)
-    OSFLAG += -D WIN32
-    ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
-        OSFLAG += -D AMD64
-    else
-        ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-            OSFLAG += -D AMD64
-        endif
-        ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-            OSFLAG += -D IA32
-        endif
-    endif
-else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
-        OSFLAG += -D LINUX
-    endif
-    ifeq ($(UNAME_S),Darwin)
-        OSFLAG += -D OSX
-    endif
-    UNAME_P := $(shell uname -p)
-    ifeq ($(UNAME_P),x86_64)
-        OSFLAG += -D AMD64
-    endif
-    ifneq ($(filter %86,$(UNAME_P)),)
-        OSFLAG += -D IA32
-    endif
-    ifneq ($(filter arm%,$(UNAME_P)),)
-        OSFLAG += -D ARM
-    endif
-endif
-
-VPATH= src/ tests/ include/
-
-# LOG_LEVEL values:
-#
-#  NONE=1,
-#  INFO=2,
-#  WARNING=4,
-#  ERROR=8,
-#  CRITICAL=16
-LOGL?= 1
-
-# LOG_MODE values:
-#  FLAG=0
-#  LEVEL=1
-LOGM?= 0
-
-CXX= g++
-CXXFLAGS= -Wall -std=c++11 -g -I ./include -I ../include -D LOG_LEVEL=$(LOGL) -D LOG_MODE=$(LOGM)
-CPP_SRC?= $(wildcard ./tests/*.cpp)
-
-CC= gcc
-CFLAGS=-Wall -g -I ./include -I ../include -std=c90 -D LOG_LEVEL=$(LOGL) -D LOG_MODE=$(LOGM)
-C_SRC?= $(wildcard ./src/*.c)
-
-LFLAGS= -Wl,-rpath=. -o
-
-OBJS_LIB= $(C_SRC:.c=.o)
-HEADERS_LIB= $(wildcard ./include/*.h)
-LIB_FLAGS= rcs
-
-OBJS= $(CPP_SRC:.cpp=.o)
-DEPS= $(CPP_SRC:.cpp=.d) $(C_SRC:.c=.d)
-
-%.o:%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-%.o:%.c
-	$(CC) $(CFLAGS) -fPIC -c $< -o $@
-
-%.d:%.c
-	$(CC) $(CFLAGS) -M -MF"$@" $<
-
-%.d:%.cpp
-	$(CXX) $(CXXFLAGS) -M -MF"$@" $<
-
-
-$(EXECUTABLE): $(OBJS) $(DEPS) $(STATIC_LIB)
-	$(CXX) $(OBJS) $(LFLAGS) $@ -L. -l$(LIB_RTC_NAME)
-
-$(LIB_RTC_REAL): $(OBJS_LIB) $(HEADERS_LIB)
-	$(CC) -shared -Wl,-h,$(LIB_RTC_SONAME) -o $@ $(OBJS_LIB)
-
-$(LIB_RTC_SONAME): $(LIB_RTC_REAL)
-	#ln -s $< $@
-	ldconfig -n -v .
-
-$(LIB_RTC_LINKER): $(LIB_RTC_SONAME)
-	ln -sf $< $@	
-
-#all: $(EXECUTABLE) $(LIB_RTC_REAL)
-#all: $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER)
-all: $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER) $(EXECUTABLE)
-
-.PHONY: printinfo
-printinfo:
-	@echo "Compiler Pre Defines ..........."
-	$(CC) -dM -E - < /dev/null
-	@echo "CXXFLAGS ......................."
-	@echo $(CXXFLAGS)
-	@echo "CFLAGS ........................."
-	@echo $(CFLAGS)
-	@echo "LFLAGS ........................."
-	@echo $(LFLAGS)
-	@echo "AR.............................."
-	@echo $(AR)
-	@echo "LN.............................."
-	@echo $(LN)
-	@echo "OSFLAG.........................."
-	@echo $(OSFLAG)
-
-.PHONY: clean
-clean:
-	$(RM) $(EXECUTABLE) *.o ./tests/*.o ./src/*.o ./tests/*.d ./src/*.d *.a 
-	$(RM) $(LIB_RTC_REAL) $(LIB_RTC_SONAME) $(LIB_RTC_LINKER)
-
-.PHONY: rebuild
-rebuild: clean all
-
-
-# -------------------------  TOP LEVEL MAKEFILE  -------------------------  
-# SUBDIRS += lib cpp-app c-app
-
-# all: $(SUBDIRS)
-# .PHONY: $(SUBDIRS)
-
-# $(SUBDIRS):
+$(SUBDIRS):
 	$(MAKE) -C $@
 
-# $(SUBDIRS:%=%-clean):
+$(SUBDIRS:%=%-clean):
 	$(MAKE) -C $(@:-clean=) clean
 
-# clean: $(SUBDIRS:%=%-clean)
-# -------------------------  TOP LEVEL MAKEFILE  -------------------------  
+clean: $(SUBDIRS:%=%-clean)
