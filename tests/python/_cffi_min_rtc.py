@@ -26,43 +26,67 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #==============================================================================
 
+import sys
 from cffi import FFI
 ffibuilder = FFI()
 
-# cdef() expects a single string declaring the C types, functions and
-# globals needed to use the shared object. It must be in valid C syntax.
-ffibuilder.cdef("""
-    typedef enum _Status {
-	    NOERROR = 0,
-	    INVLDPTR = 1
-	} Status;
 
-	bool isYearLeap(uint32_t year);
-	Status tmInSeconds(uint32_t *tmInSecs, struct tm t);
-	Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs);
-	Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday);
+def doSetuUp(includeDirs, libName, libDir):
+	ffibuilder.cdef("""
+		    typedef enum _Status {
+			    NOERROR = 0,
+			    INVLDPTR = 1
+			} Status;
 
-""")
+			bool isYearLeap(uint32_t year);
+			Status tmInSeconds(uint32_t *tmInSecs, struct tm t);
+			Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs);
+			Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday);
 
-# set_source() gives the name of the python extension module to
-# produce, and some C source code as a string.  This C code needs
-# to make the declarated functions, types and globals available,
-# so it is often just the "#include".
-ffibuilder.set_source("_min_rtc_cffi",
-"""
-	 #include<stdio.h>
-	 #include<time.h>
-	 #include<string.h>
-	 #include<stdint.h>
-	 #include<stdbool.h>
-     #include "qltime.h"
-""",
+		""")
+	# TODO: This is an erroneous approach, if the user passes more than one
+	# library paths, position 0 can have any of them.
+	linkArgs= [""]
+	linkArg0 = "-Wl,-rpath=" + libDir[0]
+	linkArgs[0] = linkArg0
 
-#TODO": remove all hardcoded paths
-     libraries=['min_rtc'],
-     library_dirs=['/scratch/development/experimental/rtc/tests/cpp/../../lib/'],
-     include_dirs=['../../lib/include'],
-     extra_link_args=["-Wl,-rpath=/scratch/development/experimental/rtc/tests/cpp/../../lib/"])   # library name, for the linker
+	ffibuilder.set_source("_min_rtc_cffi",
+		"""
+			 #include <stdio.h>
+			 #include <time.h>
+			 #include <string.h>
+			 #include <stdint.h>
+			 #include <stdbool.h>
+		     #include "qltime.h"
+		""",
+
+		libraries=libName,
+		library_dirs=libDir,
+		include_dirs=includeDirs,
+		extra_link_args=linkArgs)
 
 if __name__ == "__main__":
-    ffibuilder.compile(verbose=True)
+
+	if(len(sys.argv) < 4):
+		print("""
+			Error, this script expects 3 positional arguments, these are:
+				Arg[0] = Include Directories Path
+				Arg[1] = Library Linker Name
+				Arg[2] = Library Directory
+			""")
+		sys.exit(0)
+	else:
+		for s in sys.argv:
+			print(s)
+
+		incDirs = [""]
+		incDirs[0] = sys.argv[1]
+		libNames = [""]
+		libNames[0] = sys.argv[2]
+		libDirs = [""]
+		libDirs[0] = sys.argv[3]
+
+		doSetuUp(includeDirs=incDirs, libName=libNames, libDir=libDirs)
+
+	ffibuilder.compile(verbose=True)
+

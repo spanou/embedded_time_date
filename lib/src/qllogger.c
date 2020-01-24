@@ -31,20 +31,20 @@
 #include "qllogger.h"
 
 #ifndef LOG_LEVEL
-    #define LOG_LEVEL NONE
+    #define LOG_LEVEL OFF
 #endif/*_LOG_LEVEL_*/
 
 #ifndef LOG_MODE
     #define LOG_MODE LEVEL
 #endif
 
-#if(LOG_LEVEL > NONE)
+#if(LOG_LEVEL > OFF)
     static LogLevel globalLogLevel = LOG_LEVEL;
     static LogMode globalLogMode = LOG_MODE;
-#endif/*(LOG_LEVEL > NONE)*/
+#endif/*(LOG_LEVEL > OFF)*/
 
 void qlLogger(LogLevel l, const char* const fmt, ...){
-#if(LOG_LEVEL > NONE)
+#if(LOG_LEVEL > OFF)
     if(fmt==NULL){
         return;
     }
@@ -62,6 +62,6 @@ void qlLogger(LogLevel l, const char* const fmt, ...){
     va_start(args, fmt);
     vprintf(fmt, args);
     va_end(args);
-#endif/*(LOG_LEVEL > NONE)*/
+#endif/*(LOG_LEVEL > OFF)*/
 }
 

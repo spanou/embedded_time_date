@@ -82,13 +82,13 @@ endif
 vpath= src/ include/
 
 # LOG_LEVEL values:
-#
-#  NONE=1,
+#  OFF=0
+#  LOW=1,
 #  INFO=2,
 #  WARNING=4,
 #  ERROR=8,
 #  CRITICAL=16
-LOGL?= 1
+LOGL?= 0
 
 # LOG_MODE values:
 #  FLAG=0

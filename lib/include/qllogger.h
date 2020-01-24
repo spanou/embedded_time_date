@@ -33,7 +33,8 @@ extern "C" {
 #endif
 
 typedef enum _LogLevel{
-    NONE=0x01,
+	OFF=0x00,
+    LOW=0x01,
     INFO=0x02,
     WARNING=0x04,
     ERROR=0x08,

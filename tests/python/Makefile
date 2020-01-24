@@ -35,6 +35,12 @@ else
 	CURDIR?=$(PWD)/$(SUBDIR)
 endif
 
+INC_DIR ?= ../../lib/include
+LIB_LINKER_NAME ?= min_rtc
+LIB_DIR ?= $(CURDIR)/../../lib/
+
+CFFI_FLAGS ?= $(INC_DIR) $(LIB_LINKER_NAME) $(LIB_DIR)
+
 ifeq ($(OS),Windows_NT)
 	OSFLAG += -D WIN32
 	ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
@@ -68,7 +74,7 @@ else
 endif
 
 _min_rtc_cffi.c:_cffi_min_rtc.py
-	$(PYTHON) _cffi_min_rtc.py
+	$(PYTHON) _cffi_min_rtc.py $(CFFI_FLAGS)
 
 all: _min_rtc_cffi.c
 
