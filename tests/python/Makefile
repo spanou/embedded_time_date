@@ -41,6 +41,12 @@ LN?=ln
 
 OSFLAG :=
 
+ifeq (0, ${MAKELEVEL})
+    CURDIR?=$(PWD)
+else
+    CURDIR?=$(PWD)/$(SUBDIR)
+endif
+
 ifeq ($(OS),Windows_NT)
     OSFLAG += -D WIN32
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)

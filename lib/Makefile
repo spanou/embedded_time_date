@@ -38,7 +38,12 @@ LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
 
 LN?=ln
 LDCONFIG?=ldconfig
-CURDIR?=$(PWD)/$(SUBDIR)
+
+ifeq (0, ${MAKELEVEL})
+	CURDIR?=$(PWD)
+else
+	CURDIR?=$(PWD)/$(SUBDIR)
+endif
 
 OSFLAG :=
 
