@@ -25,8 +25,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-#SUBDIRS += lib/ tests/cpp/ tests/python/
-SUBDIRS += lib/ tests/cpp/
+SUBDIRS += lib/ tests/cpp/ tests/python/
 
 all: $(SUBDIRS)
 .PHONY: $(SUBDIRS)

@@ -205,6 +205,9 @@ Status dayOfWeek(uint32_t year, uint8_t month, uint8_t day, uint8_t* wday){
     /* Value of 1 means Sunday, value of 0 means Saturday */
     *wday = (x)?(x-1):Sat;
 
+    qlLogger(INFO, "(%d) %s::%s -> dayOfWeek(%d, %d, %d, %d)\n",
+        __LINE__, __FILE__, __FUNCTION__, year, month, day, *wday);
+
     return(NOERROR);
 }
 
