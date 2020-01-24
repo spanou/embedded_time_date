@@ -38,13 +38,13 @@
     #define LOG_MODE LEVEL
 #endif
 
-
-static LogLevel globalLogLevel = LOG_LEVEL;
-static LogMode globalLogMode = LOG_MODE;
-
+#if(LOG_LEVEL > NONE)
+    static LogLevel globalLogLevel = LOG_LEVEL;
+    static LogMode globalLogMode = LOG_MODE;
+#endif/*(LOG_LEVEL > NONE)*/
 
 void qlLogger(LogLevel l, const char* const fmt, ...){
-
+#if(LOG_LEVEL > NONE)
     if(fmt==NULL){
         return;
     }
@@ -62,5 +62,6 @@ void qlLogger(LogLevel l, const char* const fmt, ...){
     va_start(args, fmt);
     vprintf(fmt, args);
     va_end(args);
+#endif/*(LOG_LEVEL > NONE)*/
 }
 
