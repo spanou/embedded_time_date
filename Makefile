@@ -25,15 +25,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-
 #SUBDIRS += lib/ tests/cpp/ tests/python/
-SUBDIRS += lib/
+SUBDIRS += lib/ tests/cpp/
 
 all: $(SUBDIRS)
 .PHONY: $(SUBDIRS)
 
 $(SUBDIRS):
-	$(MAKE) -C $@
+	$(MAKE) -C $@ SUBDIR:=$@
 
 $(SUBDIRS:%=%-clean):
 	$(MAKE) -C $(@:-clean=) clean

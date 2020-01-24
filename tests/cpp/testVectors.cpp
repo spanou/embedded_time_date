@@ -31,7 +31,7 @@
 #include<stdint.h>
 #include<stdbool.h>
 
-#include "../include/qltime.h"
+#include "qltime.h"
 #include "testvector.h"
 
 

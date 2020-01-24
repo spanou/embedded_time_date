@@ -37,6 +37,8 @@ LIB_RTC_SONAME=$(LIB_RTC_LINKER).$(LIB_RTC_VER_MAJ)
 LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
 
 LN?=ln
+LDCONFIG?=ldconfig
+CURDIR?=$(PWD)/$(SUBDIR)
 
 OSFLAG :=
 
@@ -113,13 +115,12 @@ $(LIB_RTC_LINKER): $(LIB_RTC_SONAME)
 	ln -sf $< $@
 
 $(LIB_RTC_SONAME): $(LIB_RTC_REAL)
-	ldconfig -n -X -v $(PWD)
-	@echo "Called ldconfig..."
+	$(LDCONFIG) -n $(CURDIR)
 
-$(LIB_RTC_REAL): $(OBJS_LIB) $(HEADERS_LIB)
+
+$(LIB_RTC_REAL): $(OBJS_LIB) $(DEPS) $(HEADERS_LIB)
 	$(CC) -shared -Wl,-h,$(LIB_RTC_SONAME) -o $@ $(OBJS_LIB)
 
-#all: $(LIB_RTC_LINKER) $(LIB_RTC_SONAME) $(LIB_RTC_REAL)
 all: $(LIB_RTC_LINKER)
 
 .PHONY: printinfo
@@ -136,6 +137,11 @@ printinfo:
 	@echo $(LN)
 	@echo "OSFLAG.........................."
 	@echo $(OSFLAG)
+	@echo "LDCONFIG........................"
+	@echo $(LDCONFIG)
+	@echo "PWD............................"
+	@echo $(PWD)
+
 
 .PHONY: clean
 clean:

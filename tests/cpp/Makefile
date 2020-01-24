@@ -40,8 +40,9 @@ LIB_RTC_REAL= $(LIB_RTC_SONAME).$(LIB_RTC_VER_MIN).$(LIB_RTC_VER_REL)
 LN?=ln
 
 OSFLAG :=
+CURDIR?=$(PWD)/$(SUBDIR)
 
-LIBPATH?=$(PWD)/../../lib
+LIBPATH?=$(CURDIR)/../../lib
 
 ifeq ($(OS),Windows_NT)
 	OSFLAG += -D WIN32
