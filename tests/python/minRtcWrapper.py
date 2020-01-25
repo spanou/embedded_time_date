@@ -78,6 +78,46 @@ monthStringInCode = {
   	"Dec": 11
 }
 
+class TimeStruct :
+
+  hour = None
+  min = None
+  sec = None
+  mday = None
+  mon = None
+  year = None
+  wday = None
+  yday = None
+  isdst = None
+  gmtoff = None
+
+  def __init__(self, time=None):
+
+    if None == time :
+      return
+
+    if type(time) == TimeStruct:
+      self.hour = time.hour
+      self.min = time.min
+      self.sec = time.sec
+      self.mday = time.mday
+      self.mon = time.mon
+      self.year = time.year
+      self.wday = time.wday
+      self.yday = time.yday
+      self.isdst = time.isdst
+      self.gmtoff = time.gmtoff
+
+    if type(time) == str :
+      print("TimeStruct passed String[%s]" % time)
+
+
+  def __repr__(self):
+    return("Time: %s-%s-%s - %s:%s:%s" % (self.year, self.mon, self.mday, self.hour, self.min, self.sec))
+
+  def __str__(self):
+    return("Time: %s-%s-%s - %s:%s:%s" % (self.year, self.mon, self.mday, self.hour, self.min, self.sec))
+
 def isLeapYear(year) :
   return lib.isYearLeap(year)
 

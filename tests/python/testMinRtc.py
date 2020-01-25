@@ -36,5 +36,22 @@ def main():
 
 	rtcLib.secondsInStuctTm()
 
+	itsTime1 = rtcLib.TimeStruct()
+	itsTime1.year = 2000
+	itsTime1.mon = 0
+	itsTime1.mday = 1
+	itsTime1.hour = 0
+	itsTime1.min = 0
+	itsTime1.sec = 0
+	itsTime1.wday = 6
+	itsTime1.yday = 1
+
+	itsTime2 = rtcLib.TimeStruct(itsTime1)
+
+	print("itsTime1 = " + str(itsTime1))
+	print("itsTime2 = " + str(itsTime2)) 
+
+	itsTime3 = rtcLib.TimeStruct(time="Blah Blah")
+
 if __name__ == '__main__':
 	main()
