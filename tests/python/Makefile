@@ -80,7 +80,7 @@ all: minRtcPythonCffiWrapper.c
 
 .PHONY: clean
 clean:
-	$(RM) *.c *.o *.so
+	$(RM) *.c *.o *.so *.pyc
 	$(RM) -Rf __pycache__
 
 .PHONY: rebuild

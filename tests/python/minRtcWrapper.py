@@ -97,19 +97,21 @@ def dayOfWeekFromDate(year, month, day):
 
 def secondsInStuctTm() :
   tm = ffi.new("struct tm*")
-  tm.tm_sec = 0   
-  tm.tm_min = 0
-  tm.tm_hour = 0
-  tm.tm_mday = 0
-  tm.tm_mon = 0
-  tm.tm_year = 0
-  tm.tm_wday = 0
-  tm.tm_yday = 0
-  tm.tm_isdst = 0 
-  tm.tm_gmtoff = 0
 
-  if 0 == lib.secondsInStuctTm(tm, 946684800) :
+  print("Calling lib.secondsInStuctTm(tm, " + str(194369040) + " )")
+  if 0 == lib.secondsInStuctTm(tm, 194369040) :
     print("Pass")
+    print("tm.tm_sec = ", tm.tm_sec) 
+    print("tm.tm_min = ", tm.tm_min)
+    print("tm.tm_hour = ", tm.tm_hour)
+    print("tm.tm_mday = ", tm.tm_mday)
+    print("tm.tm_mon = ", tm.tm_mon )
+    print("tm.tm_year = ", tm.tm_year)
+    print("tm.tm_wday = ", tm.tm_wday )
+    print("tm.tm_yday = ", tm.tm_yday )
+    print("tm.tm_isdst = ", tm.tm_isdst )
+    print("tm.tm_gmtoff = ", tm.tm_gmtoff )
+
   else:
     print("Fail")
 
