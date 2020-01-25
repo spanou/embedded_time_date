@@ -73,10 +73,10 @@ else
 	endif
 endif
 
-_min_rtc_cffi.c:_cffi_min_rtc.py
-	$(PYTHON) _cffi_min_rtc.py $(CFFI_FLAGS)
+minRtcPythonCffiWrapper.c:minRtcPythonWrapperGenerator.py
+	$(PYTHON) minRtcPythonWrapperGenerator.py $(CFFI_FLAGS)
 
-all: _min_rtc_cffi.c
+all: minRtcPythonCffiWrapper.c
 
 .PHONY: clean
 clean:

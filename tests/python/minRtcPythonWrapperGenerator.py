@@ -50,7 +50,7 @@ def doSetuUp(includeDirs, libName, libDir):
 	linkArg0 = "-Wl,-rpath=" + libDir[0]
 	linkArgs[0] = linkArg0
 
-	ffibuilder.set_source("_min_rtc_cffi",
+	ffibuilder.set_source("minRtcPythonCffiWrapper",
 		"""
 			 #include <stdio.h>
 			 #include <time.h>
