@@ -34,5 +34,7 @@ def main():
 	print("Year: 2000, Month: Jan, Day: 1 -> ( " +
 		rtcLib.dayOfWeekFromDate(2000, "Jan", 1) + " )")
 
+	rtcLib.secondsInStuctTm()
+
 if __name__ == '__main__':
 	main()

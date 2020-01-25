@@ -93,3 +93,24 @@ def dayOfWeekFromDate(year, month, day):
   ffi.release(dayCode)
 
   return(dayString)
+
+
+def secondsInStuctTm() :
+  tm = ffi.new("struct tm*")
+  tm.tm_sec = 0   
+  tm.tm_min = 0
+  tm.tm_hour = 0
+  tm.tm_mday = 0
+  tm.tm_mon = 0
+  tm.tm_year = 0
+  tm.tm_wday = 0
+  tm.tm_yday = 0
+  tm.tm_isdst = 0 
+  tm.tm_gmtoff = 0
+
+  if 0 == lib.secondsInStuctTm(tm, 946684800) :
+    print("Pass")
+  else:
+    print("Fail")
+
+  ffi.release(tm)
