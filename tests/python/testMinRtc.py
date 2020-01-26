@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 import minRtcWrapper as rtcLib
+from time import struct_time, gmtime, time, localtime
 
 def main():
 	if rtcLib.isLeapYear(2000) :
@@ -36,7 +37,7 @@ def main():
 
 	rtcLib.secondsInStuctTm()
 
-	itsTime1 = rtcLib.TimeStruct()
+	itsTime1 = rtcLib.StructTmUnix()
 	itsTime1.year = 2000
 	itsTime1.mon = 0
 	itsTime1.mday = 1
@@ -46,12 +47,17 @@ def main():
 	itsTime1.wday = 6
 	itsTime1.yday = 1
 
-	itsTime2 = rtcLib.TimeStruct(itsTime1)
+	itsTime2 = rtcLib.StructTmUnix(itsTime1)
 
 	print("itsTime1 = " + str(itsTime1))
 	print("itsTime2 = " + str(itsTime2)) 
 
-	itsTime3 = rtcLib.TimeStruct(time="Blah Blah")
+	itsTime3 = rtcLib.StructTmUnix(time="Blah Blah")
+
+	itsTime4 = localtime(time())
+	itsTime5 = rtcLib.StructTmUnix(time=itsTime4)
+	print("itsTime5 = " + str(itsTime5)) 
+
 
 if __name__ == '__main__':
 	main()

@@ -26,27 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 from minRtcPythonCffiWrapper import ffi,lib
+from time import struct_time
 
 
 dayCodeInString = {
-	0: "Sunday",
-	1: "Monday",
-	2: "Tuesday",
-	3: "Wednesday",
-	4: "Thursday",
-	5: "Friday",
-	6: "Saturday"
-}
+	0: "Sun",	1: "Mon",	2: "Tue",	3: "Wed",
+	4: "Thu",	5: "Fri",	6: "Sat" }
 
 dayStringInCode = {
-	"Sunday" : 0,
-	"Monday" : 1,
-	"Tuesday" :2,
-	"Wednesday": 3,
-	"Thursday": 4,
-	"Friday": 5,
-	"Saturday": 6
-}
+	"Sun": 0, "Mon": 1, "Tue": 2, "Wed": 3,
+	"Thu": 4, "Fri": 5,	"Sat": 6 }
 
 monthCodeInString = {
   	 0: "Jan",
@@ -78,7 +67,7 @@ monthStringInCode = {
   	"Dec": 11
 }
 
-class TimeStruct :
+class StructTmUnix :
 
   hour = None
   min = None
@@ -96,7 +85,7 @@ class TimeStruct :
     if None == time :
       return
 
-    if type(time) == TimeStruct:
+    if type(time) == StructTmUnix:
       self.hour = time.hour
       self.min = time.min
       self.sec = time.sec
@@ -109,7 +98,19 @@ class TimeStruct :
       self.gmtoff = time.gmtoff
 
     if type(time) == str :
-      print("TimeStruct passed String[%s]" % time)
+      print("StructTmUnix passed String[%s]" % time)
+
+    if type(time) == struct_time:
+      self.hour = time.tm_hour
+      self.min = time.tm_min
+      self.sec = time.tm_sec
+      self.mday = time.tm_mday
+      self.mon = time.tm_mon-1
+      self.year = time.tm_year
+      self.wday = time.tm_wday
+      self.yday = time.tm_yday
+      self.isdst = time.tm_isdst
+      self.gmtoff = time.tm_gmtoff      
 
 
   def __repr__(self):
