@@ -67,6 +67,7 @@ monthStringInCode = {
   	"Dec": 11
 }
 
+
 class StructTmUnix :
 
   hour = None
@@ -110,7 +111,7 @@ class StructTmUnix :
       self.wday = time.tm_wday
       self.yday = time.tm_yday
       self.isdst = time.tm_isdst
-      self.gmtoff = time.tm_gmtoff      
+      self.gmtoff = time.tm_gmtoff
 
 
   def __repr__(self):
@@ -136,10 +137,10 @@ def dayOfWeekFromDate(year, month, day):
   return(dayString)
 
 
-def secondsInStuctTm() :
+def secondsInStuctTm(secsSinceEpoch=0) :
   tm = ffi.new("struct tm*")
 
-  print("Calling lib.secondsInStuctTm(tm, " + str(194369040) + " )")
+  print("Calling lib.secondsInStuctTm(tm, " + str(secsSinceEpoch) + " )")
   if 0 == lib.secondsInStuctTm(tm, 194369040) :
     print("Pass")
     print("tm.tm_sec = ", tm.tm_sec) 

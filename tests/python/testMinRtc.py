@@ -28,35 +28,60 @@
 import minRtcWrapper as rtcLib
 from time import struct_time, gmtime, time, localtime
 
+
+def testRtcLib():
+	"""
+		Exercises the following functions from minRtcWrapper :
+			tmInSeconds(...)
+			secondsInStuctTm(...);
+			isYearLeap(...)
+			dayOfWeek(...)
+	"""
+	testSecondsInStructTm()
+	testTmInSeconds()
+	testDayOfWeek()
+	testIsYearLeap()
+
+def testSecondsInStructTm():
+	"""
+		Test Every Hour to the minute and past the minute from the EPOCH to the
+		maximum 32 bit unsigned integer. The struct_tm returned should match the
+		one we get from the time module. If we get an error print out the test
+		parameters and break execution.
+	"""
+	structTm = rtcLib.StructTmUnix()
+
 def main():
-	if rtcLib.isLeapYear(2000) :
-		print("Year 2000 is Leap")
+	testRtcLib()
 
-	print("Year: 2000, Month: Jan, Day: 1 -> ( " +
-		rtcLib.dayOfWeekFromDate(2000, "Jan", 1) + " )")
+	# if rtcLib.isLeapYear(2000) :
+	# 	print("Year 2000 is Leap")
 
-	rtcLib.secondsInStuctTm()
+	# print("Year: 2000, Month: Jan, Day: 1 -> ( " +
+	# 	rtcLib.dayOfWeekFromDate(2000, "Jan", 1) + " )")
 
-	itsTime1 = rtcLib.StructTmUnix()
-	itsTime1.year = 2000
-	itsTime1.mon = 0
-	itsTime1.mday = 1
-	itsTime1.hour = 0
-	itsTime1.min = 0
-	itsTime1.sec = 0
-	itsTime1.wday = 6
-	itsTime1.yday = 1
+	# rtcLib.secondsInStuctTm()
 
-	itsTime2 = rtcLib.StructTmUnix(itsTime1)
+	# itsTime1 = rtcLib.StructTmUnix()
+	# itsTime1.year = 2000
+	# itsTime1.mon = 0
+	# itsTime1.mday = 1
+	# itsTime1.hour = 0
+	# itsTime1.min = 0
+	# itsTime1.sec = 0
+	# itsTime1.wday = 6
+	# itsTime1.yday = 1
 
-	print("itsTime1 = " + str(itsTime1))
-	print("itsTime2 = " + str(itsTime2)) 
+	# itsTime2 = rtcLib.StructTmUnix(itsTime1)
 
-	itsTime3 = rtcLib.StructTmUnix(time="Blah Blah")
+	# print("itsTime1 = " + str(itsTime1))
+	# print("itsTime2 = " + str(itsTime2)) 
 
-	itsTime4 = localtime(time())
-	itsTime5 = rtcLib.StructTmUnix(time=itsTime4)
-	print("itsTime5 = " + str(itsTime5)) 
+	# itsTime3 = rtcLib.StructTmUnix(time="Blah Blah")
+
+	# itsTime4 = localtime(time())
+	# itsTime5 = rtcLib.StructTmUnix(time=itsTime4)
+	# print("itsTime5 = " + str(itsTime5)) 
 
 
 if __name__ == '__main__':
