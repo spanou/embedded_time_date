@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 import minRtcWrapper as rtcLib
-from time import struct_time, gmtime, time, localtime
+from time import struct_time, gmtime, time, localtime, sleep, gmtime
 
 
 def testRtcLib():
@@ -38,9 +38,9 @@ def testRtcLib():
 			dayOfWeek(...)
 	"""
 	testSecondsInStructTm()
-	testTmInSeconds()
-	testDayOfWeek()
-	testIsYearLeap()
+	# testTmInSeconds()
+	# testDayOfWeek()
+	# testIsYearLeap()
 
 def testSecondsInStructTm():
 	"""
@@ -49,7 +49,16 @@ def testSecondsInStructTm():
 		one we get from the time module. If we get an error print out the test
 		parameters and break execution.
 	"""
-	structTm = rtcLib.StructTmUnix()
+	structTmExpected = rtcLib.StructTmUnix(gmtime(0))
+	print("structTmExpected = " + str(structTmExpected))
+
+	structTmCalculated = rtcLib.secondsInStuctTm(0)
+	print("structTmCalculated = " + str(structTmCalculated))
+
+	if structTmCalculated == structTmExpected :
+		print("Test Passed")
+	else:
+		print("Test Failed")
 
 def main():
 	testRtcLib()

@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 from minRtcPythonCffiWrapper import ffi,lib
-from time import struct_time
+from time import struct_time, time, localtime
 
 
 dayCodeInString = {
@@ -66,7 +66,7 @@ class StructTmUnix :
   def __eq__(self, rhs):
     if(self.hour != rhs.hour):
       return(False)
-    if(self.min != rhs.mih):
+    if(self.min != rhs.min):
       return(False)
     if(self.sec != rhs.sec):
       return(False)
@@ -82,45 +82,44 @@ class StructTmUnix :
       return(False)
     if(self.isdst != rhs.isdst):
       return(False)
-    if(self.gmtoff != rhs.gmtoff):
-      return(False)
+    # if(self.gmtoff != rhs.gmtoff):
+    #   return(False)
     #if we got to this point then the
     #two objects are equal
     return(True)
 
+  def __ne__(self, rhs):
+    return( not __eq__(self, rhs))
 
-  def __init__(self, time=None):
 
-    if None == time :
-      return
+  def __init__(self, tm=None):
 
-    if type(time) == StructTmUnix:
-      self.hour = time.hour
-      self.min = time.min
-      self.sec = time.sec
-      self.mday = time.mday
-      self.mon = time.mon
-      self.year = time.year
-      self.wday = time.wday
-      self.yday = time.yday
-      self.isdst = time.isdst
-      self.gmtoff = time.gmtoff
+    if None == tm:
+      tm = localtime(time())
 
-    if type(time) == str :
-      print("StructTmUnix passed String[%s]" % time)
+    if type(tm) == StructTmUnix:
+      self.hour = tm.hour
+      self.min = tm.min
+      self.sec = tm.sec
+      self.mday = tm.mday
+      self.mon = tm.mon
+      self.year = tm.year
+      self.wday = tm.wday
+      self.yday = tm.yday
+      self.isdst = tm.isdst
+      self.gmtoff = tm.gmtoff
 
-    if type(time) == struct_time:
-      self.hour = time.tm_hour
-      self.min = time.tm_min
-      self.sec = time.tm_sec
-      self.mday = 0 if time.tm_mday==6 else time.tm_mday+1 
-      self.mon = time.tm_mon-1
-      self.year = time.tm_year
-      self.wday = time.tm_wday
-      self.yday = time.tm_yday-1
-      self.isdst = time.tm_isdst
-      self.gmtoff = time.tm_gmtoff
-
+    if type(tm) == struct_time:
+      self.hour = tm.tm_hour
+      self.min = tm.tm_min
+      self.sec = tm.tm_sec
+      self.mday =  tm.tm_mday
+      self.mon = tm.tm_mon-1
+      self.year = tm.tm_year
+      self.wday = 0 if tm.tm_wday==6 else tm.tm_wday+1
+      self.yday = tm.tm_yday-1
+      self.isdst = tm.tm_isdst
+      self.gmtoff = tm.tm_gmtoff
 
   def __str__(self):
       return("{wday}, {mday:0>2} {ymon} {year:0>4} {hour:0>2}:{min:0>2}:{sec:0>2}".format(
@@ -131,6 +130,33 @@ class StructTmUnix :
         hour=str(self.hour),
         min=str(self.min),
         sec=str(self.sec)))
+
+  def __repr__(self):
+      return("{wday}, {mday:0>2} {ymon} {year:0>4} {hour:0>2}:{min:0>2}:{sec:0>2}".format(
+        wday=dayCodeInString[self.wday],
+        mday=str(self.mday),
+        ymon=monthCodeInString[self.mon],
+        year=str(self.year),
+        hour=str(self.hour),
+        min=str(self.min),
+        sec=str(self.sec)))
+
+  def toStructTmUnix(self, cdata=None):
+
+    if cdata == None:
+      return None
+
+    self.hour = cdata.tm_hour
+    self.min = cdata.tm_min
+    self.sec = cdata.tm_sec
+    self.mday = cdata.tm_mday
+    self.mon = cdata.tm_mon
+    self.year = cdata.tm_year + 1900
+    self.wday = cdata.tm_wday
+    self.yday = cdata.tm_yday
+    self.isdst = cdata.tm_isdst
+    #self.gmtoff = cdata.gmtoff
+    return self
 
 def isLeapYear(year) :
   return lib.isYearLeap(year)
@@ -150,10 +176,13 @@ def dayOfWeekFromDate(year, month, day):
 
 
 def secondsInStuctTm(secsSinceEpoch=0) :
+  newTm = StructTmUnix()
   tm = ffi.new("struct tm*")
 
+  theType = type(tm)
+
   print("Calling lib.secondsInStuctTm(tm, " + str(secsSinceEpoch) + " )")
-  if 0 == lib.secondsInStuctTm(tm, 194369040) :
+  if 0 == lib.secondsInStuctTm(tm, secsSinceEpoch) :
     print("Pass")
     print("tm.tm_sec = ", tm.tm_sec) 
     print("tm.tm_min = ", tm.tm_min)
@@ -165,8 +194,11 @@ def secondsInStuctTm(secsSinceEpoch=0) :
     print("tm.tm_yday = ", tm.tm_yday )
     print("tm.tm_isdst = ", tm.tm_isdst )
     print("tm.tm_gmtoff = ", tm.tm_gmtoff )
+    newTm.toStructTmUnix(tm)
 
   else:
     print("Fail")
 
   ffi.release(tm)
+
+  return newTm
