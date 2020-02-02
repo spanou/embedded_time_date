@@ -38,34 +38,16 @@ dayStringInCode = {
 	"Thu": 4, "Fri": 5,	"Sat": 6 }
 
 monthCodeInString = {
-  	 0: "Jan",
-  	 1: "Feb",
-  	 2: "Mar",
-  	 3: "Apr",
-  	 4: "May",
-  	 5: "Jun",
-  	 6: "Jul",
-  	 7: "Aug",
-  	 8: "Sep",
-  	 9: "Oct",
-  	 10: "Nov",
-  	 11: "Dec"
-}
+  0: "Jan", 1: "Feb", 2: "Mar",
+  3: "Apr", 4: "May", 5: "Jun",
+  6: "Jul", 7: "Aug", 8: "Sep",
+  9: "Oct", 10: "Nov",11: "Dec" }
 
 monthStringInCode = {
-  	"Jan": 0,
-  	"Feb": 1,
-  	"Mar": 2,
-  	"Apr": 3,
-  	"May": 4,
-  	"Jun": 5,
-  	"Jul": 6,
-  	"Aug": 7,
-  	"Sep": 8,
-  	"Oct": 9,
-  	"Nov": 10,
-  	"Dec": 11
-}
+  "Jan": 0, "Feb": 1,	"Mar": 2,
+  "Apr": 3,	"May": 4,	"Jun": 5,
+  "Jul": 6,	"Aug": 7,	"Sep": 8,
+  "Oct": 9,	"Nov": 10,"Dec": 11 }
 
 
 class StructTmUnix :
@@ -80,6 +62,32 @@ class StructTmUnix :
   yday = None
   isdst = None
   gmtoff = None
+
+  def __eq__(self, rhs):
+    if(self.hour != rhs.hour):
+      return(False)
+    if(self.min != rhs.mih):
+      return(False)
+    if(self.sec != rhs.sec):
+      return(False)
+    if(self.mday != rhs.mday):
+      return(False)
+    if(self.mon != rhs.mon):
+      return(False)
+    if(self.year != rhs.year):
+      return(False)
+    if(self.wday != rhs.wday):
+      return(False)
+    if(self.yday != rhs.yday):
+      return(False)
+    if(self.isdst != rhs.isdst):
+      return(False)
+    if(self.gmtoff != rhs.gmtoff):
+      return(False)
+    #if we got to this point then the
+    #two objects are equal
+    return(True)
+
 
   def __init__(self, time=None):
 
@@ -105,20 +113,24 @@ class StructTmUnix :
       self.hour = time.tm_hour
       self.min = time.tm_min
       self.sec = time.tm_sec
-      self.mday = time.tm_mday
+      self.mday = 0 if time.tm_mday==6 else time.tm_mday+1 
       self.mon = time.tm_mon-1
       self.year = time.tm_year
       self.wday = time.tm_wday
-      self.yday = time.tm_yday
+      self.yday = time.tm_yday-1
       self.isdst = time.tm_isdst
       self.gmtoff = time.tm_gmtoff
 
 
-  def __repr__(self):
-    return("Time: %s-%s-%s - %s:%s:%s" % (self.year, self.mon, self.mday, self.hour, self.min, self.sec))
-
   def __str__(self):
-    return("Time: %s-%s-%s - %s:%s:%s" % (self.year, self.mon, self.mday, self.hour, self.min, self.sec))
+      return("{wday}, {mday:0>2} {ymon} {year:0>4} {hour:0>2}:{min:0>2}:{sec:0>2}".format(
+        wday=dayCodeInString[self.wday],
+        mday=str(self.mday),
+        ymon=monthCodeInString[self.mon],
+        year=str(self.year),
+        hour=str(self.hour),
+        min=str(self.min),
+        sec=str(self.sec)))
 
 def isLeapYear(year) :
   return lib.isYearLeap(year)
