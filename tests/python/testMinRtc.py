@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 import minRtcWrapper as rtcLib
-from time import struct_time, gmtime, time, localtime, sleep, gmtime
+from time import struct_time, gmtime, time, localtime, sleep
 
 
 def testRtcLib():
@@ -49,16 +49,25 @@ def testSecondsInStructTm():
 		one we get from the time module. If we get an error print out the test
 		parameters and break execution.
 	"""
-	structTmExpected = rtcLib.StructTmUnix(gmtime(0))
-	print("structTmExpected = " + str(structTmExpected))
+	secsSinceEpoch = 0
+	secsInHour = 3600
+	max32BitValue = 2**32
 
-	structTmCalculated = rtcLib.secondsInStuctTm(0)
-	print("structTmCalculated = " + str(structTmCalculated))
+	while secsSinceEpoch < max32BitValue :
+		structTmExpected = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
+		structTmCalculated = rtcLib.secondsInStuctTm(secsSinceEpoch)
 
-	if structTmCalculated == structTmExpected :
-		print("Test Passed")
-	else:
-		print("Test Failed")
+		if structTmCalculated != structTmExpected :
+			print("Failed at {secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
+				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+			break
+		else:
+			print("{secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
+				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+
+		secsSinceEpoch += secsInHour
+
+
 
 def main():
 	testRtcLib()

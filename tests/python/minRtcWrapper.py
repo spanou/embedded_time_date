@@ -63,7 +63,8 @@ class StructTmUnix :
   isdst = None
   gmtoff = None
 
-  def __eq__(self, rhs):
+
+  def equality(self, rhs):
     if(self.hour != rhs.hour):
       return(False)
     if(self.min != rhs.min):
@@ -82,14 +83,17 @@ class StructTmUnix :
       return(False)
     if(self.isdst != rhs.isdst):
       return(False)
-    # if(self.gmtoff != rhs.gmtoff):
-    #   return(False)
+    if(self.gmtoff != rhs.gmtoff):
+      return(False)
     #if we got to this point then the
     #two objects are equal
     return(True)
 
+  def __eq__(self, rhs):
+    return self.equality(rhs)
+
   def __ne__(self, rhs):
-    return( not __eq__(self, rhs))
+    return(not self.equality(rhs))
 
 
   def __init__(self, tm=None):
@@ -155,7 +159,7 @@ class StructTmUnix :
     self.wday = cdata.tm_wday
     self.yday = cdata.tm_yday
     self.isdst = cdata.tm_isdst
-    #self.gmtoff = cdata.gmtoff
+    self.gmtoff = cdata.tm_gmtoff
     return self
 
 def isLeapYear(year) :
@@ -176,28 +180,15 @@ def dayOfWeekFromDate(year, month, day):
 
 
 def secondsInStuctTm(secsSinceEpoch=0) :
-  newTm = StructTmUnix()
+  newTm = None 
   tm = ffi.new("struct tm*")
 
   theType = type(tm)
 
-  print("Calling lib.secondsInStuctTm(tm, " + str(secsSinceEpoch) + " )")
   if 0 == lib.secondsInStuctTm(tm, secsSinceEpoch) :
-    print("Pass")
-    print("tm.tm_sec = ", tm.tm_sec) 
-    print("tm.tm_min = ", tm.tm_min)
-    print("tm.tm_hour = ", tm.tm_hour)
-    print("tm.tm_mday = ", tm.tm_mday)
-    print("tm.tm_mon = ", tm.tm_mon )
-    print("tm.tm_year = ", tm.tm_year)
-    print("tm.tm_wday = ", tm.tm_wday )
-    print("tm.tm_yday = ", tm.tm_yday )
-    print("tm.tm_isdst = ", tm.tm_isdst )
-    print("tm.tm_gmtoff = ", tm.tm_gmtoff )
+    newTm = StructTmUnix()
     newTm.toStructTmUnix(tm)
 
-  else:
-    print("Fail")
 
   ffi.release(tm)
 
