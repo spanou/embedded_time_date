@@ -123,17 +123,17 @@ int main(int argc, char* argv[]){
 }
 
 bool compareTmStruct(struct tm lhs, struct tm rhs){
-    // if(lhs.tm_sec != rhs.tm_sec)
-    //     return(false);
+    if(lhs.tm_sec != rhs.tm_sec)
+        return(false);
 
-    // if(lhs.tm_min != rhs.tm_min)
-    //     return(false);
+    if(lhs.tm_min != rhs.tm_min)
+        return(false);
 
-    // if(lhs.tm_hour != rhs.tm_hour)
-    //     return(false);
+    if(lhs.tm_hour != rhs.tm_hour)
+        return(false);
 
-    // if(lhs.tm_mday != rhs.tm_mday)
-    //     return(false);
+    if(lhs.tm_mday != rhs.tm_mday)
+        return(false);
 
     if(lhs.tm_mon != rhs.tm_mon)
         return(false);
@@ -141,8 +141,8 @@ bool compareTmStruct(struct tm lhs, struct tm rhs){
     if(lhs.tm_year != rhs.tm_year)
         return(false);
 
-    // if(lhs.tm_wday != rhs.tm_wday)
-    //     return(false);
+    if(lhs.tm_wday != rhs.tm_wday)
+        return(false);
 
     if(lhs.tm_yday != rhs.tm_yday)
         return(false);
@@ -150,7 +150,6 @@ bool compareTmStruct(struct tm lhs, struct tm rhs){
     return(true);
 }
 
-#define NORMAL_FLOW 1
 bool testTimeStampToStructTm(uint32_t* tv, size_t s){
     uint32_t i = 0;
     Status st = NOERROR;
@@ -162,6 +161,8 @@ bool testTimeStampToStructTm(uint32_t* tv, size_t s){
             __LINE__, __FILE__, __FUNCTION__);
     }
 
+    printf("Calling -> testTimeStampToStructTm()\n");
+
     uint32_t totalTestCount = UINT32_MAX / NSEC_MIN;
     uint32_t timeStamp = 0;
 
@@ -170,17 +171,10 @@ bool testTimeStampToStructTm(uint32_t* tv, size_t s){
         struct tm derivedTm = {0};
         struct tm expectedTm = {0};
 
-        #if(NORMAL_FLOW)
         time_t theTime = timeStamp;
-        #else
-        time_t theTime = 94608000;
-        secondsInStuctTm(&derivedTm, theTime);
-        #endif
+        struct tm* bl = gmtime((const time_t*)&theTime);
 
-#if(NORMAL_FLOW)
-        struct tm* blah = gmtime((const time_t*)&theTime);
-
-        memcpy((void*)&expectedTm, (void*)blah, sizeof(struct tm));
+        memcpy((void*)&expectedTm, (void*)bl, sizeof(struct tm));
 
         if(NOERROR == (st = secondsInStuctTm(&derivedTm, theTime))){
 
@@ -198,9 +192,10 @@ bool testTimeStampToStructTm(uint32_t* tv, size_t s){
 
             } else {
 
-                // printf("(%d) %s:%s() Passed: Test Time Stamp \n",
-                //     __LINE__, __FILE__, __FUNCTION__);
-                //printStructTm(derivedTm);
+                // printf("(%d) %s:%s() Passed: Time Stamp Test #%u: %lu - ",
+                //     __LINE__, __FILE__, __FUNCTION__, i, theTime);
+
+                // printStructTm(derivedTm);
 
                 ++passCount;
 
@@ -212,10 +207,9 @@ bool testTimeStampToStructTm(uint32_t* tv, size_t s){
         }
 
         timeStamp += NSEC_MIN;
-#endif
     }
 
-    printf("Pass Count = %u ,", passCount);
+    printf("Pass Count = %u, ", passCount);
     printf("Fail Count = %u ", failCount);
     printf("\n");
 
@@ -384,14 +378,14 @@ void printStructTm(struct tm theTime){
         monthToString(theTime.tm_mon));
 
     printf("tm.yday: %d, ", theTime.tm_yday);
-    // printf("tm.mday: %d\n", theTime.tm_mday);
+    printf("tm.mday: %d, ", theTime.tm_mday);
 
-    // printf("tm.hour: %d\n", theTime.tm_hour);
-    // printf("tm.min: %d\n", theTime.tm_min);
-    // printf("tm.sec: %d\n", theTime.tm_sec);
+    printf("tm.hour: %d, ", theTime.tm_hour);
+    printf("tm.min: %d, ", theTime.tm_min);
+    printf("tm.sec: %d, ", theTime.tm_sec);
 
-    // printf("tm.wday: %d (%s)\n", theTime.tm_wday,
-    //     dayOfWeekToString(theTime.tm_wday));
+    printf("tm.wday: %d (%s)", theTime.tm_wday,
+        dayOfWeekToString(theTime.tm_wday));
 
     printf("\n");
 

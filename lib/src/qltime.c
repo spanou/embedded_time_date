@@ -86,6 +86,7 @@ static uint32_t minsFromSec(const uint32_t timeInSeconds,
 
 static uint32_t monthOfYearFromYday(const uint32_t yday,
     uint32_t remainingTimeInSec,
+    uint32_t* mday,
     bool isYearLeap);
 
 static uint8_t yearInCode(uint32_t year);
@@ -168,24 +169,17 @@ Status secondsInStuctTm(struct tm *t, const uint32_t tmInSecs){
 
     t->tm_yday = yearDayFromSec(remainingTimeInSec, &remainingTimeInSec);
 
-    t->tm_mon = monthOfYearFromYday(t->tm_yday, remainingTimeInSec,
+    t->tm_mon = monthOfYearFromYday(t->tm_yday, remainingTimeInSec, (uint32_t*)&t->tm_mday,
         isYearLeap(t->tm_year + YEAROFFSET_TM));
 
-#if(0)
-    t->tm_mday = 0;
     t->tm_hour = hoursFromSec(remainingTimeInSec, &remainingTimeInSec);
+
     t->tm_min = minsFromSec(remainingTimeInSec, &remainingTimeInSec);
+
     t->tm_sec = remainingTimeInSec;
 
     dayOfWeek((t->tm_year + YEAROFFSET_TM), t->tm_mon, t->tm_mday,
         (uint8_t*)&t->tm_wday);
-#else
-    t->tm_mday =0;
-    t->tm_hour =0;
-    t->tm_min =0;
-    t->tm_sec =0;
-    t->tm_wday= 0;
-#endif
 
     return(NOERROR);
 }
@@ -263,6 +257,9 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
     uint32_t yearCount = 0;
     uint32_t leapYearCount = 0;
 
+    if(NULL == remainingTimeInSec)
+        return(0);
+
     *remainingTimeInSec = timeInSeconds;
 
     while(*remainingTimeInSec >= NSEC_YEAR){
@@ -298,6 +295,9 @@ uint32_t yearsSinceEpoch(const uint32_t timeInSeconds,
 uint32_t yearDayFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
+    if(NULL == remainingTimeInSec)
+        return(0);
+
     if(timeInSeconds == 0){
         *remainingTimeInSec = 0;
         return(0);
@@ -311,6 +311,14 @@ uint32_t yearDayFromSec(const uint32_t timeInSeconds,
 uint32_t hoursFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
+    if(NULL == remainingTimeInSec)
+        return(0);
+
+    if(timeInSeconds == 0){
+        *remainingTimeInSec = 0;
+        return(0);
+    }
+
     *remainingTimeInSec= timeInSeconds % NSEC_HOUR;
 
     return(timeInSeconds / NSEC_HOUR);
@@ -319,6 +327,14 @@ uint32_t hoursFromSec(const uint32_t timeInSeconds,
 uint32_t minsFromSec(const uint32_t timeInSeconds,
     uint32_t *remainingTimeInSec) {
 
+    if(NULL == remainingTimeInSec)
+        return(0);
+
+    if(timeInSeconds == 0){
+        *remainingTimeInSec = 0;
+        return(0);
+    }
+
     *remainingTimeInSec= timeInSeconds % NSEC_MIN;
 
     return(timeInSeconds / NSEC_MIN);
@@ -326,7 +342,7 @@ uint32_t minsFromSec(const uint32_t timeInSeconds,
 
 
 
-uint32_t monthOfYearFromYday(uint32_t yDay, uint32_t remainingTimeInSec, bool isYearLeap){
+uint32_t monthOfYearFromYday(uint32_t yDay, uint32_t remainingTimeInSec, uint32_t* mday, bool isYearLeap){
 
     uint32_t i;
     uint32_t totalDayCount = 0;
@@ -343,7 +359,12 @@ uint32_t monthOfYearFromYday(uint32_t yDay, uint32_t remainingTimeInSec, bool is
 
         if((totalDayCount + monInDays) >= yDay){
             monthOfYear = i;
+
+            if(NULL != mday){
+                *mday = yDay - totalDayCount ;
+            }
             break;
+
         } else {
             totalDayCount += monInDays;
         }
