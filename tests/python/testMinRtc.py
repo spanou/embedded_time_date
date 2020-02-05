@@ -60,6 +60,8 @@ def testSecondsInStructTm():
 		if structTmCalculated != structTmExpected :
 			print("Failed at {secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
 				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+			print("Cal = " + structTmCalculated.debugPrint())
+			print("Exp = " + structTmExpected.debugPrint())
 			break
 		else:
 			print("{secCount:0>20} - Expected: {exp} Calculated: {calc}".format(

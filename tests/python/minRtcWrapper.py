@@ -145,6 +145,19 @@ class StructTmUnix :
         min=str(self.min),
         sec=str(self.sec)))
 
+  def debugPrint(self):
+    return("hour:{h} min:{m} sec:{s} mday:{md} mon:{mn} year:{y} wday:{wd} yday:{yd} isdst:{isd} gmtoff:{gm}".format(
+      h=str(self.hour),
+      m=str(self.min),
+      s=str(self.sec),
+      md=str(self.mday),
+      mn=str(self.mon),
+      y=str(self.year),
+      wd=str(self.wday),
+      yd=str(self.yday),
+      isd=str(self.isdst),
+      gm=str(self.gmtoff)))
+
   def toStructTmUnix(self, cdata=None):
 
     if cdata == None:

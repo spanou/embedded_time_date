@@ -37,7 +37,7 @@
 
 #define TBLROW_SZ 10                /*Table Row Size For Printouts*/
 
-extern TimeStampTestVector timeStampTestVectors[];
+extern uint32_t timeStamps[];
 
 static const char* monStrings[] = {
     "January", "February", "March", "April","May", "June", "July", "August",
@@ -64,7 +64,7 @@ void printTable(const uint32_t* table,
 
 bool dayOfTheWeekChecker(void);
 
-bool testTimeStampToStructTm(TimeStampTestVector* tv, size_t s);
+bool testTimeStampToStructTm(uint32_t* tv, size_t s);
 
 bool compareTmStruct(struct tm lhs, struct tm rhs);
 
@@ -113,95 +113,27 @@ static uint32_t leapYearGoldenTestTable[] = {
 
 int main(int argc, char* argv[]){
 
-    // time_t theTimeInSeconds;
-
-    // /* Retrieve the current time and date since the epoch */
-    // theTimeInSeconds = time(0);
-    // /* Convert the time in seconds to a struct tm */
-    // struct tm *theTime = localtime(&theTimeInSeconds);
-
-
-    // printf("The Current Time Since Epoch"
-    //     " (1970-1-1, 00:00:00 +0000UTC) = %ld sec \n", theTimeInSeconds);
-
-
-    // if(0 == theTime){
-    //     printf("The call to localtime() returned a null");
-    //     return(-1);
-    // }
-
-    // printf("In YYYY-MM-DD, hh:mm:ss : %u-%d-%d, %d:%d:%d\n",
-    //     YEAROFFSET_TM+theTime->tm_year,
-    //     theTime->tm_mon +1,
-    //     theTime->tm_mday,
-    //     theTime->tm_hour,
-    //     theTime->tm_min,
-    //     theTime->tm_sec);
-
-    // uint32_t derivedTimeInSeconds =0;
-
-    // tmInSeconds(&derivedTimeInSeconds, *theTime);
-    // printf("tmInSeconds() = %u\n", derivedTimeInSeconds);
-
-    // if(derivedTimeInSeconds != (uint32_t)theTimeInSeconds){
-    //     printf("Retrieved time - time(), is not the same as "
-    //         "derived time - tmInSeconds()");
-    // }
-
     leapYearChecker( leapYearGoldenTestTable,
         sizeof(leapYearGoldenTestTable)/sizeof(uint32_t),
         STARTYEAR_CODE_RANGE, ENDYEAR_CODE_RANGE);
 
-    // struct tm itsTime = {0};
-
-    // secondsInStuctTm(&itsTime, UINT32_MAX);
-    // printf("Time in Sec: %u \n", UINT32_MAX);
-    // printStructTm(itsTime);
-
-    // secondsInStuctTm(&itsTime, (UINT32_MAX/2));
-    // printf("Time in Sec: %u \n", (UINT32_MAX/2));
-    // printStructTm(itsTime);
-
-    // dayOfTheWeekChecker();
-
-    //int vectorSize = 9;
-    // int i = 0;
-
-    // struct tm vectorTime;
-
-    // for(i=0; i<vectorSize; i++){
-    //     time_t theTime = testVectors[i].timeInSeconds;
-    //     gmtime_r(&theTime, &vectorTime);
-
-    //     printf("{%u,       {%d, %d, %d, %d, %d, %u, %d, %d, 0, 0, 0}}\n",
-    //     testVectors[i].timeInSeconds,
-    //     vectorTime.tm_sec,
-    //     vectorTime.tm_min,
-    //     vectorTime.tm_hour,
-    //     vectorTime.tm_mday,
-    //     vectorTime.tm_mon,
-    //     vectorTime.tm_year,
-    //     vectorTime.tm_wday,
-    //     vectorTime.tm_yday);
-    // }
-
-    testTimeStampToStructTm(timeStampTestVectors, 10);
+    testTimeStampToStructTm(timeStamps, 11);
 
     return(0);
 }
 
 bool compareTmStruct(struct tm lhs, struct tm rhs){
-    if(lhs.tm_sec != rhs.tm_sec)
-        return(false);
+    // if(lhs.tm_sec != rhs.tm_sec)
+    //     return(false);
 
-    if(lhs.tm_min != rhs.tm_min)
-        return(false);
+    // if(lhs.tm_min != rhs.tm_min)
+    //     return(false);
 
-    if(lhs.tm_hour != rhs.tm_hour)
-        return(false);
+    // if(lhs.tm_hour != rhs.tm_hour)
+    //     return(false);
 
-    if(lhs.tm_mday != rhs.tm_mday)
-        return(false);
+    // if(lhs.tm_mday != rhs.tm_mday)
+    //     return(false);
 
     if(lhs.tm_mon != rhs.tm_mon)
         return(false);
@@ -209,8 +141,8 @@ bool compareTmStruct(struct tm lhs, struct tm rhs){
     if(lhs.tm_year != rhs.tm_year)
         return(false);
 
-    if(lhs.tm_wday != rhs.tm_wday)
-        return(false);
+    // if(lhs.tm_wday != rhs.tm_wday)
+    //     return(false);
 
     if(lhs.tm_yday != rhs.tm_yday)
         return(false);
@@ -218,37 +150,57 @@ bool compareTmStruct(struct tm lhs, struct tm rhs){
     return(true);
 }
 
-bool testTimeStampToStructTm(TimeStampTestVector* tv, size_t s){
-    size_t i = 0;
+#define NORMAL_FLOW 1
+bool testTimeStampToStructTm(uint32_t* tv, size_t s){
+    uint32_t i = 0;
     Status st = NOERROR;
     uint32_t passCount = 0;
+    uint32_t failCount = 0;
 
     if(tv == NULL){
         printf("(%d) %s:%s() param=tv was null\n",
             __LINE__, __FILE__, __FUNCTION__);
     }
 
-    for(i=0; i<s; i++){
+    uint32_t totalTestCount = UINT32_MAX / NSEC_MIN;
+    uint32_t timeStamp = 0;
+
+
+    for(i=0; i<totalTestCount; i++){
         struct tm derivedTm = {0};
+        struct tm expectedTm = {0};
 
-        printf("(%d) %s:%s() Time Stamp Test #%lu: %u \n",
-                    __LINE__, __FILE__, __FUNCTION__, i, tv[i].timeInSeconds);
+        #if(NORMAL_FLOW)
+        time_t theTime = timeStamp;
+        #else
+        time_t theTime = 94608000;
+        secondsInStuctTm(&derivedTm, theTime);
+        #endif
 
-        if(NOERROR == (st = secondsInStuctTm(&derivedTm, tv[i].timeInSeconds))){
-            if(false == compareTmStruct(derivedTm, tv[i].timeStruct)){
+#if(NORMAL_FLOW)
+        struct tm* blah = gmtime((const time_t*)&theTime);
 
-                printf("(%d) %s:%s() Failed: Test Time Stamp \n",
-                    __LINE__, __FILE__, __FUNCTION__);
-                printf("****** Derived ******\n");
+        memcpy((void*)&expectedTm, (void*)blah, sizeof(struct tm));
+
+        if(NOERROR == (st = secondsInStuctTm(&derivedTm, theTime))){
+
+            if(false == compareTmStruct(derivedTm, expectedTm)){
+
+                printf("(%d) %s:%s() Failed at Time Stamp Test #%u: %lu \n",
+                    __LINE__, __FILE__, __FUNCTION__, i, theTime);
+
+                printf("Derived => ");
                 printStructTm(derivedTm);
-                printf("****** Expected ******\n");
-                printStructTm(tv[i].timeStruct);
+                printf("Expected => ");
+                printStructTm(expectedTm);
+
+                ++failCount;
 
             } else {
 
-                printf("(%d) %s:%s() Passed: Test Time Stamp \n",
-                    __LINE__, __FILE__, __FUNCTION__);
-                printStructTm(derivedTm);
+                // printf("(%d) %s:%s() Passed: Test Time Stamp \n",
+                //     __LINE__, __FILE__, __FUNCTION__);
+                //printStructTm(derivedTm);
 
                 ++passCount;
 
@@ -256,8 +208,16 @@ bool testTimeStampToStructTm(TimeStampTestVector* tv, size_t s){
         } else {
             printf("(%d) %s:%s() Call to secondsInStuctTm() failed\n",
                 __LINE__, __FILE__, __FUNCTION__);
+            break;
         }
+
+        timeStamp += NSEC_MIN;
+#endif
     }
+
+    printf("Pass Count = %u ,", passCount);
+    printf("Fail Count = %u ", failCount);
+    printf("\n");
 
     return((passCount!=s)?false:true);
 }
@@ -417,19 +377,22 @@ void printTable(const uint32_t* table, const uint32_t size,
 
 
 void printStructTm(struct tm theTime){
-    printf("tm.year: %d\n", theTime.tm_year );
-    printf("tm.year + 1900: %d\n", (theTime.tm_year + 1900));
+    printf("tm.year: %d, ", theTime.tm_year );
+    printf("tm.year + 1900: %d, ", (theTime.tm_year + 1900));
 
-    printf("tm.mon: %d (%s)\n", theTime.tm_mon,
-       monthToString(theTime.tm_mon));
+    printf("tm.mon: %d (%s), ", theTime.tm_mon,
+        monthToString(theTime.tm_mon));
 
-    printf("tm.yday: %d\n", theTime.tm_yday);
-    printf("tm.mday: %d\n", theTime.tm_mday);
-    printf("tm.hour: %d\n", theTime.tm_hour);
-    printf("tm.min: %d\n", theTime.tm_min);
-    printf("tm.sec: %d\n", theTime.tm_sec);
+    printf("tm.yday: %d, ", theTime.tm_yday);
+    // printf("tm.mday: %d\n", theTime.tm_mday);
 
-    printf("tm.wday: %d (%s)\n", theTime.tm_wday,
-        dayOfWeekToString(theTime.tm_wday));
+    // printf("tm.hour: %d\n", theTime.tm_hour);
+    // printf("tm.min: %d\n", theTime.tm_min);
+    // printf("tm.sec: %d\n", theTime.tm_sec);
+
+    // printf("tm.wday: %d (%s)\n", theTime.tm_wday,
+    //     dayOfWeekToString(theTime.tm_wday));
+
+    printf("\n");
 
 }
