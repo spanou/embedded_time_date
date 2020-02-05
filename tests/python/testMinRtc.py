@@ -50,8 +50,11 @@ def testSecondsInStructTm():
 		parameters and break execution.
 	"""
 	secsSinceEpoch = 0
-	secsInHour = 3600
+	#secsInHour = 3600
+	minsInHour = 60
 	max32BitValue = 2**32
+	passCount = 0
+	failCount = 0
 
 	while secsSinceEpoch < max32BitValue :
 		structTmExpected = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
@@ -62,14 +65,15 @@ def testSecondsInStructTm():
 				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
 			print("Cal = " + structTmCalculated.debugPrint())
 			print("Exp = " + structTmExpected.debugPrint())
-			break
+			failCount += 1
 		else:
 			print("{secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
 				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+			passCount += 1
 
-		secsSinceEpoch += secsInHour
+		secsSinceEpoch += minsInHour
 
-
+	print("Pass Count : " + str(passCount) + " Fail Count : " + str(failCount))
 
 def main():
 	testRtcLib()
