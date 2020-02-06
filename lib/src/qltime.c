@@ -39,11 +39,6 @@ static const uint8_t monDayCount[] = {
       31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31
 };
 
-/*static const uint8_t daysOfWeekValue[] = {
-    Sun, Mon, Tue, Wed, Thu, Fri, Sat
-      0,   1,   2,   3,   4,   5,    6
-};*/
-
 static const uint8_t monOfYearValue[] = {
     /*Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec*/
       1,   4,   4,   0,   2,   5,   0,   3,   6,   1,   4,   6

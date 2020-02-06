@@ -32,6 +32,7 @@
 #include<stdbool.h>
 
 #include "../include/qltime.h"
+#include "../include/qllogger.h"
 #include "testvector.h"
 
 
@@ -39,10 +40,10 @@
 
 extern uint32_t timeStamps[];
 
-static const char* monStrings[] = {
-    "January", "February", "March", "April","May", "June", "July", "August",
-    "September", "October", "November", "December"
-};
+// static const char* monStrings[] = {
+//     "January", "February", "March", "April","May", "June", "July", "August",
+//     "September", "October", "November", "December"
+// };
 
 static const char* monAbrvStrings[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov",
@@ -58,21 +59,23 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
     uint32_t startYear,
     uint32_t endYear);
 
-void printTable(const uint32_t* table,
+void printTable(LogLevel level,
+    const uint32_t* table,
     const uint32_t tableSize,
     const uint8_t rowLength);
 
 bool dayOfTheWeekChecker(void);
 
-bool testTimeStampToStructTm(uint32_t* tv, size_t s);
+bool testTimeStampToStructTm(void);
+bool testStructTmToTimeStamp(void);
 
 bool compareTmStruct(struct tm lhs, struct tm rhs);
 
-static void printStructTm(const struct tm theTime);
+static void printStructTm(LogLevel level, const struct tm theTime);
 
-static INLINE const char* const monthToString(uint8_t month){
-    return((month > 11)? NULL : monStrings[month]);
-}
+// static INLINE const char* const monthToString(uint8_t month){
+//     return((month > 11)? NULL : monStrings[month]);
+// }
 
 static INLINE const char* const monthToStringAbrv(uint8_t month){
     return((month > 11)? NULL : monAbrvStrings[month]);
@@ -117,7 +120,10 @@ int main(int argc, char* argv[]){
         sizeof(leapYearGoldenTestTable)/sizeof(uint32_t),
         STARTYEAR_CODE_RANGE, ENDYEAR_CODE_RANGE);
 
-    testTimeStampToStructTm(timeStamps, 11);
+    testTimeStampToStructTm();
+
+    testStructTmToTimeStamp();
+
 
     return(0);
 }
@@ -150,70 +156,122 @@ bool compareTmStruct(struct tm lhs, struct tm rhs){
     return(true);
 }
 
-bool testTimeStampToStructTm(uint32_t* tv, size_t s){
+bool testTimeStampToStructTm(void){
     uint32_t i = 0;
     Status st = NOERROR;
     uint32_t passCount = 0;
     uint32_t failCount = 0;
-
-    if(tv == NULL){
-        printf("(%d) %s:%s() param=tv was null\n",
-            __LINE__, __FILE__, __FUNCTION__);
-    }
-
-    printf("Calling -> testTimeStampToStructTm()\n");
-
     uint32_t totalTestCount = UINT32_MAX / NSEC_MIN;
     uint32_t timeStamp = 0;
 
+    qlLogger(ERROR, "Starting time stamp to struct tm tests...\n");
 
     for(i=0; i<totalTestCount; i++){
+
         struct tm derivedTm = {0};
         struct tm expectedTm = {0};
 
         time_t theTime = timeStamp;
         struct tm* bl = gmtime((const time_t*)&theTime);
-
         memcpy((void*)&expectedTm, (void*)bl, sizeof(struct tm));
 
         if(NOERROR == (st = secondsInStuctTm(&derivedTm, theTime))){
 
             if(false == compareTmStruct(derivedTm, expectedTm)){
 
-                printf("(%d) %s:%s() Failed at Time Stamp Test #%u: %lu \n",
+                qlLogger(ERROR,
+                    "(%d) %s::%s -> Failed at Time Stamp Test #%u: %lu \n",
                     __LINE__, __FILE__, __FUNCTION__, i, theTime);
 
-                printf("Derived => ");
-                printStructTm(derivedTm);
-                printf("Expected => ");
-                printStructTm(expectedTm);
+                qlLogger(ERROR, "Derived => ");
+                printStructTm(ERROR, derivedTm);
+                qlLogger(ERROR, "Expected => ");
+                printStructTm(ERROR, expectedTm);
 
                 ++failCount;
 
             } else {
 
-                // printf("(%d) %s:%s() Passed: Time Stamp Test #%u: %lu - ",
-                //     __LINE__, __FILE__, __FUNCTION__, i, theTime);
-
-                // printStructTm(derivedTm);
+                qlLogger(INFO, "(%d) %s::%s -> Passed: Time Stamp Test #%u: %lu \n",
+                    __LINE__, __FILE__, __FUNCTION__, i, theTime);
 
                 ++passCount;
-
             }
         } else {
-            printf("(%d) %s:%s() Call to secondsInStuctTm() failed\n",
-                __LINE__, __FILE__, __FUNCTION__);
+
+            qlLogger(ERROR, "(%d) %s::%s -> Call to secondsInStuctTm() failed\n",
+                    __LINE__, __FILE__, __FUNCTION__);
             break;
         }
 
         timeStamp += NSEC_MIN;
     }
 
-    printf("Pass Count = %u, ", passCount);
-    printf("Fail Count = %u ", failCount);
-    printf("\n");
+    qlLogger(ERROR, "Pass Count = %u, ", passCount);
+    qlLogger(ERROR, "Fail Count = %u \n", failCount);
 
-    return((passCount!=s)?false:true);
+    return((failCount!=0)?false:true);
+}
+
+
+bool testStructTmToTimeStamp(void){
+    uint32_t i = 0;
+    Status st = NOERROR;
+    uint32_t passCount = 0;
+    uint32_t failCount = 0;
+    uint32_t totalTestCount = UINT32_MAX / NSEC_MIN;
+    uint32_t expectedTimeStamp = 0;
+
+    qlLogger(ERROR, "Starting the struct tm to time stamp tests...\n");
+
+    for(i=0; i<totalTestCount; i++){
+
+        struct tm* theStructTm;
+        time_t expectedTime = expectedTimeStamp;
+        uint32_t derivedTmeStamp = 0;
+
+        theStructTm = gmtime((const time_t*)&expectedTime);
+
+
+        if(NOERROR == (st = tmInSeconds(&derivedTmeStamp, *theStructTm))){
+
+            time_t derivedTime = derivedTmeStamp;
+
+            if(derivedTime != expectedTime){
+
+                qlLogger(ERROR,
+                    "(%d) %s::%s -> Failed at Time Stamp Test #%u: %lu \n",
+                    __LINE__, __FILE__, __FUNCTION__, i, expectedTime);
+
+                qlLogger(ERROR, "Expected Time Stamp => %lu", expectedTime);
+                printStructTm(ERROR, *theStructTm);
+
+                qlLogger(ERROR, "Derived Time Stamp => %lu", derivedTime);
+
+                ++failCount;
+
+            } else {
+
+                qlLogger(INFO, "(%d) %s::%s -> Passed: Time Stamp Test #%u: %lu \n",
+                    __LINE__, __FILE__, __FUNCTION__, i, expectedTime);
+                printStructTm(INFO, *theStructTm);
+
+                ++passCount;
+            }
+        } else {
+
+            qlLogger(ERROR, "(%d) %s::%s -> Call to tmInSeconds() failed\n",
+                    __LINE__, __FILE__, __FUNCTION__);
+            break;
+        }
+
+        expectedTimeStamp += NSEC_MIN;
+    }
+
+    qlLogger(ERROR, "Pass Count = %u, ", passCount);
+    qlLogger(ERROR, "Fail Count = %u \n", failCount);
+
+    return((failCount!=0)?false:true);
 }
 
 /*=============================================================================
@@ -239,17 +297,19 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
         return(ret);
     }
 
+    qlLogger(ERROR,"Starting leap year tests...\n");
+
     /* Set up the derived table */
     const uint32_t derivedLeapYearTableSz = ((endYear-startYear) + 1);
     uint32_t derivedLeapYearTable[derivedLeapYearTableSz];
     uint32_t derivedLeapYearTableIndex = 0;
 
     /* Print Golden Leap Year Table */
-    printf("\n");
-    printf("========== Printing Golden Table ==========\n");
-    printf("Table Size = %u \n", goldenLeapYearTableSz);
-    printTable(goldenLeapYearTable, goldenLeapYearTableSz, TBLROW_SZ);
-    printf("\n");
+    qlLogger(INFO, "\n");
+    qlLogger(INFO,"========== Printing Golden Table ==========\n");
+    qlLogger(INFO, "Table Size = %u \n", goldenLeapYearTableSz);
+    printTable(INFO, goldenLeapYearTable, goldenLeapYearTableSz, TBLROW_SZ);
+    qlLogger(INFO, "\n");
 
     /* Calculate and Print the Leap Year Table */
     uint32_t i;
@@ -259,15 +319,15 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
         }
     }
 
-    printf("\n");
-    printf("========== Printing Calculated Table ==========\n");
-    printf("Table Size = %u \n", derivedLeapYearTableIndex);
-    printTable(derivedLeapYearTable, derivedLeapYearTableIndex, TBLROW_SZ);
-    printf("\n");
+    qlLogger(INFO, "\n");
+    qlLogger(INFO, "========== Printing Calculated Table ==========\n");
+    qlLogger(INFO, "Table Size = %u \n", derivedLeapYearTableIndex);
+    printTable(INFO, derivedLeapYearTable, derivedLeapYearTableIndex, TBLROW_SZ);
+    qlLogger(INFO, "\n");
 
     /* Size Check for the tables */
     if(goldenLeapYearTableSz != derivedLeapYearTableIndex){
-        printf("Error: Golden Leap Table Size = %u Calculated Leap Year "
+        qlLogger(ERROR,"Error: Golden Leap Table Size = %u Calculated Leap Year "
             "Table Size = %u\n",
             goldenLeapYearTableSz, derivedLeapYearTableIndex);
 
@@ -281,66 +341,18 @@ bool leapYearChecker(const uint32_t* goldenLeapYearTable,
         if(0 != memcmp((const void*)goldenLeapYearTable,
             (const void*)derivedLeapYearTable,
             goldenLeapYearTableSz)) {
-            printf("Error: Golden Leap Table doesn't match Calculated Leap"
+            qlLogger(ERROR,"Error: Golden Leap Table doesn't match Calculated Leap"
                 " Table\n");
             ret = false;
         } else {
+            qlLogger(ERROR,"Pass: Golden Leap Table matches the Calculated Leap"
+                " Table\n");
             ret = true;
         }
 
     }
 
     return(ret);
-}
-
-bool dayOfTheWeekChecker(void){
-
-    uint32_t i = 0;
-    uint8_t dayNum = 0;
-
-    struct _simpleDate {
-        uint32_t year;
-        uint8_t month;
-        uint8_t day;
-        const char * const dayOfWeek;
-    };
-
-    const char* day;
-
-    struct _simpleDate checkTable[] = {
-        {2000, Feb, 28, "Monday"},
-        {2000, Feb, 29, "Tuesday"},
-        {2000, Mar, 1,  "Wednesday"},
-        {1828, Feb, 29, "Friday"},
-        {1620, Feb, 29, "Saturday"},
-        {1976, Feb, 29, "Sunday"},
-        {1970, Jan, 1,  "Thursday"}
-    };
-
-    for(i=0; i<7; i++){
-
-        dayOfWeek(checkTable[i].year, checkTable[i].month, checkTable[i].day,
-            &dayNum);
-        day = dayOfWeekToString(dayNum);
-
-        if(0 != strcmp(day, checkTable[i].dayOfWeek)){
-            printf("Failed: Year: %d, month: %s, day: %d, dayOfWeek: %s\n",
-                checkTable[i].year,
-                monthToStringAbrv(checkTable[i].month),
-                checkTable[i].day,
-                checkTable[i].dayOfWeek);
-            break;
-        } else {
-             printf("Passed: Year: %d, month: %s, day: %d, dayOfWeek: %s\n",
-                checkTable[i].year,
-                monthToStringAbrv(checkTable[i].month),
-                checkTable[i].day,
-                checkTable[i].dayOfWeek);
-        }
-    }
-
-    return(false);
-
 }
 
 /*=============================================================================
@@ -353,7 +365,7 @@ bool dayOfTheWeekChecker(void){
  *
  * Notes: N/A
  *============================================================================*/
-void printTable(const uint32_t* table, const uint32_t size,
+void printTable(LogLevel level, const uint32_t* table, const uint32_t size,
     const uint8_t blockSize){
 
     if((0==table) || (0==size) || (0==blockSize))
@@ -361,32 +373,32 @@ void printTable(const uint32_t* table, const uint32_t size,
     uint32_t i;
     for(i = 0; i < size; i++){
         if(0 == ((i+1) % (blockSize))) {
-            printf("%d,\n", table[i]);
+            qlLogger(level,"%d,\n", table[i]);
         } else {
-            printf("%d, ", table[i]);
+            qlLogger(level,"%d, ", table[i]);
         }
     }
-    printf("\n");
+    qlLogger(level,"\n");
 }
 
 
-void printStructTm(struct tm theTime){
-    printf("tm.year: %d, ", theTime.tm_year );
-    printf("tm.year + 1900: %d, ", (theTime.tm_year + 1900));
+void printStructTm(LogLevel level, struct tm theTime){
+    qlLogger(level,"tm.year: %d, ", theTime.tm_year );
+    qlLogger(level,"tm.year + 1900: %d, ", (theTime.tm_year + 1900));
 
-    printf("tm.mon: %d (%s), ", theTime.tm_mon,
-        monthToString(theTime.tm_mon));
+    qlLogger(level,"tm.mon: %d (%s), ", theTime.tm_mon,
+        monthToStringAbrv(theTime.tm_mon));
 
-    printf("tm.yday: %d, ", theTime.tm_yday);
-    printf("tm.mday: %d, ", theTime.tm_mday);
+    qlLogger(level,"tm.yday: %d, ", theTime.tm_yday);
+    qlLogger(level,"tm.mday: %d, ", theTime.tm_mday);
 
-    printf("tm.hour: %d, ", theTime.tm_hour);
-    printf("tm.min: %d, ", theTime.tm_min);
-    printf("tm.sec: %d, ", theTime.tm_sec);
+    qlLogger(level,"tm.hour: %d, ", theTime.tm_hour);
+    qlLogger(level,"tm.min: %d, ", theTime.tm_min);
+    qlLogger(level,"tm.sec: %d, ", theTime.tm_sec);
 
-    printf("tm.wday: %d (%s)", theTime.tm_wday,
+    qlLogger(level,"tm.wday: %d (%s)", theTime.tm_wday,
         dayOfWeekToString(theTime.tm_wday));
 
-    printf("\n");
+    qlLogger(level,"\n");
 
 }

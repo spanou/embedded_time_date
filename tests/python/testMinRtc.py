@@ -37,8 +37,8 @@ def testRtcLib():
 			isYearLeap(...)
 			dayOfWeek(...)
 	"""
-	testSecondsInStructTm()
-	# testTmInSeconds()
+	#testSecondsInStructTm()
+	testStructTmInSeconds()
 	# testDayOfWeek()
 	# testIsYearLeap()
 
@@ -51,7 +51,7 @@ def testSecondsInStructTm():
 	"""
 	secsSinceEpoch = 0
 	#secsInHour = 3600
-	minsInHour = 60
+	secsInMinute = 60
 	max32BitValue = 2**32
 	passCount = 0
 	failCount = 0
@@ -71,9 +71,37 @@ def testSecondsInStructTm():
 				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
 			passCount += 1
 
-		secsSinceEpoch += minsInHour
+		secsSinceEpoch += secsInMinute
 
 	print("Pass Count : " + str(passCount) + " Fail Count : " + str(failCount))
+
+def testStructTmInSeconds():
+	secsSinceEpoch = 0
+	secsInMinute = 60
+	max32BitValue = 2**32
+	passCount = 0
+	failCount = 0
+
+	print("Starting testStructTmInSeconds()")
+	print("Max 32 Bit Value: " + str(max32BitValue))
+	print("Itterations: " + str(max32BitValue/secsInMinute))
+
+	while secsSinceEpoch < max32BitValue :
+		unixTm = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
+		secs = rtcLib.structTmUnixToSecs(unixTm)
+
+		if(secs != secsSinceEpoch):
+			print("Failed at {exp:0>20}, returned {calc:0>20}".format( exp=str(secsSinceEpoch), calc=str(secs)))
+			print(str(unixTm))
+			failCount += 1
+		else:
+			print("Passed at {exp:0>20}".format(exp=str(secsSinceEpoch)))
+			passCount +=1
+
+		secsSinceEpoch += secsInMinute
+
+	print("Pass Count : " + str(passCount) + " Fail Count : " + str(failCount))
+
 
 def main():
 	testRtcLib()

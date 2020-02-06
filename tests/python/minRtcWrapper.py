@@ -159,21 +159,38 @@ class StructTmUnix :
       gm=str(self.gmtoff)))
 
   def toStructTmUnix(self, cdata=None):
-
     if cdata == None:
       return None
 
-    self.hour = cdata.tm_hour
-    self.min = cdata.tm_min
-    self.sec = cdata.tm_sec
-    self.mday = cdata.tm_mday
-    self.mon = cdata.tm_mon
-    self.year = cdata.tm_year + 1900
-    self.wday = cdata.tm_wday
-    self.yday = cdata.tm_yday
-    self.isdst = cdata.tm_isdst
+    self.hour   = cdata.tm_hour
+    self.min    = cdata.tm_min
+    self.sec    = cdata.tm_sec
+    self.mday   = cdata.tm_mday
+    self.mon    = cdata.tm_mon
+    self.year   = cdata.tm_year + 1900
+    self.wday   = cdata.tm_wday
+    self.yday   = cdata.tm_yday
+    self.isdst  = cdata.tm_isdst
     self.gmtoff = cdata.tm_gmtoff
     return self
+
+  def fromStructTmUnix(self, cdata=None):
+    if cdata == None:
+      return None
+
+    cdata.tm_hour    = self.hour
+    cdata.tm_min     = self.min
+    cdata.tm_sec     = self.sec
+    cdata.tm_mday    = self.mday
+    cdata.tm_mon     = self.mon
+    cdata.tm_year    = self.year
+    cdata.tm_wday    = self.wday
+    cdata.tm_yday    = self.yday
+    cdata.tm_isdst   = self.isdst
+    cdata.tm_gmtoff  = self.gmtoff
+
+    return cdata
+
 
 def isLeapYear(year) :
   return lib.isYearLeap(year)
@@ -193,7 +210,7 @@ def dayOfWeekFromDate(year, month, day):
 
 
 def secondsInStuctTm(secsSinceEpoch=0) :
-  newTm = None 
+  newTm = None
   tm = ffi.new("struct tm*")
 
   theType = type(tm)
@@ -206,3 +223,26 @@ def secondsInStuctTm(secsSinceEpoch=0) :
   ffi.release(tm)
 
   return newTm
+
+
+def structTmUnixToSecs(tm=0):
+
+  timeStamp = 0
+
+  # if tm == None:
+  #   return(0)
+
+  if type(tm) == StructTmUnix:
+    t = ffi.new("struct tm*")
+    t = tm.fromStructTmUnix(t)
+    t[0].tm_year -= 1900
+    secs = ffi.new("uint32_t*", 0)
+
+    if 0 == lib.tmInSeconds(secs, t[0]):
+      timeStamp = secs[0]
+      print(str(timeStamp))
+
+    ffi.release(t)
+    ffi.release(secs)
+
+  return(timeStamp)

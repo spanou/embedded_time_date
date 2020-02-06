@@ -88,7 +88,7 @@ vpath= src/ include/
 #  WARNING=4,
 #  ERROR=8,
 #  CRITICAL=16
-LOGL?= 0
+LOGL?= 4
 
 # LOG_MODE values:
 #  FLAG=0
