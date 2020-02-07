@@ -43,16 +43,21 @@ class DisplayMonitor (Thread) :
 				if True == self.stopDisplay(self.testsList) :
 					runState = False
 
-				print(testConsumer.getTestStatus() + "\n")
+				sts = testConsumer.getTestStatus()
+
+				if(None != sts):
+					print(testConsumer.getTestStatus() + "\n")
 
 				testData = testConsumer.getTestData()
-				ubound = testData["ubound"]
-				lbound = testData["lbound"]
-				index = testData["index"]
 
-				cur = int((index/ubound) * 100) + 1 #Round Up
-				remainder = int(100 - cur)
-				print(chr(9608)*cur + chr(9617)*remainder + " " + str(cur) + "% - " + str(index))
+				if(None != testData):
+					ubound = testData["ubound"]
+					lbound = testData["lbound"]
+					index = testData["index"]
+
+					cur = int((index/ubound) * 100) + 1 #Round Up
+					remainder = int(100 - cur)
+					print(chr(9608)*cur + chr(9617)*remainder + " " + str(cur) + "% - " + str(index) + "\n")
 
 				sleep(0.1)
 
@@ -61,8 +66,11 @@ class DisplayMonitor (Thread) :
 		testCount = len(testList)
 		testStopped = 0
 		for n in testList:
-			if(n.getTestStatus() == "Stopped"):
-				testStopped += 1
+			status = n.getTestStatus()
+			if(None != status):
+				if(-1 != n.getTestStatus().find("Stopped")):
+					testStopped += 1
+
 		if(testCount == testStopped):
 			return True
 

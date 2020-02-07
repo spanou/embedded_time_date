@@ -32,15 +32,15 @@ from time import struct_time, gmtime, time, localtime, sleep
 
 
 class testSecondsToStructTm(testInfra.Test):
-	this = None
+	testName = None
 	testStatus = None
 
 	def __init__(self, testStatus:testInfra.TestStatusProducer):
-		self.this = self.__class__.__name__
+		self.testName = self.__class__.__name__
 		self.testStatus = testStatus
 
 	def doTest(self):
-		self.testStatus.setTestStatus("Started")
+		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Started")
 		count = 10000000
 
 		for n in range(0, count):
@@ -51,7 +51,30 @@ class testSecondsToStructTm(testInfra.Test):
 
 			self.testStatus.setTestData(testData)
 
-		self.testStatus.setTestStatus("Stopped")
+		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Stopped")
+		return
+
+class testStructTmToSeconds(testInfra.Test):
+	testName = None
+	testStatus = None
+
+	def __init__(self, testStatus:testInfra.TestStatusProducer):
+		self.testName = self.__class__.__name__
+		self.testStatus = testStatus
+
+	def doTest(self):
+		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Started")
+		count = 100000000
+
+		for n in range(0, count):
+			testData = {}
+			testData["lbound"] = 0
+			testData["ubound"] = count
+			testData["index"] = n
+
+			self.testStatus.setTestData(testData)
+
+		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Stopped")
 		return
 
 def testRtcLib():
@@ -131,17 +154,24 @@ def testStructTmInSeconds():
 def main():
 	#testRtcLib()
 
-	testStatus = testInfra.TestStatus()
+	testStatus1 = testInfra.TestStatus()
+	testStatus2 = testInfra.TestStatus()
 	testList = list()
-	testList.append(testStatus)
+	testList.append(testStatus1)
+	testList.append(testStatus2)
 
 	displayMonitor = testInfra.DisplayMonitor(testList)
 	displayMonitor.start()
 
-	test1 = testSecondsToStructTm(testStatus)
+	test1 = testSecondsToStructTm(testStatus1)
 	test1.doInit()
 	test1.doTest()
 	test1.doCleanUp()
+
+	test2 = testStructTmToSeconds(testStatus2)
+	test2.doInit()
+	test2.doTest()
+	test2.doCleanUp()
 
 	# if rtcLib.isLeapYear(2000) :
 	# 	print("Year 2000 is Leap")
