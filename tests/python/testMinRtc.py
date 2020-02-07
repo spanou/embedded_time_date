@@ -26,8 +26,33 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 import minRtcWrapper as rtcLib
+import testInfrastructure as testInfra
 from time import struct_time, gmtime, time, localtime, sleep
 
+
+
+class testSecondsToStructTm(testInfra.Test):
+	this = None
+	testStatus = None
+
+	def __init__(self, testStatus:testInfra.TestStatusProducer):
+		self.this = self.__class__.__name__
+		self.testStatus = testStatus
+
+	def doTest(self):
+		self.testStatus.setTestStatus("Started")
+		count = 10000000
+
+		for n in range(0, count):
+			testData = {}
+			testData["lbound"] = 0
+			testData["ubound"] = count
+			testData["index"] = n
+
+			self.testStatus.setTestData(testData)
+
+		self.testStatus.setTestStatus("Stopped")
+		return
 
 def testRtcLib():
 	"""
@@ -104,7 +129,19 @@ def testStructTmInSeconds():
 
 
 def main():
-	testRtcLib()
+	#testRtcLib()
+
+	testStatus = testInfra.TestStatus()
+	testList = list()
+	testList.append(testStatus)
+
+	displayMonitor = testInfra.DisplayMonitor(testList)
+	displayMonitor.start()
+
+	test1 = testSecondsToStructTm(testStatus)
+	test1.doInit()
+	test1.doTest()
+	test1.doCleanUp()
 
 	# if rtcLib.isLeapYear(2000) :
 	# 	print("Year 2000 is Leap")
@@ -127,13 +164,13 @@ def main():
 	# itsTime2 = rtcLib.StructTmUnix(itsTime1)
 
 	# print("itsTime1 = " + str(itsTime1))
-	# print("itsTime2 = " + str(itsTime2)) 
+	# print("itsTime2 = " + str(itsTime2))
 
 	# itsTime3 = rtcLib.StructTmUnix(time="Blah Blah")
 
 	# itsTime4 = localtime(time())
 	# itsTime5 = rtcLib.StructTmUnix(time=itsTime4)
-	# print("itsTime5 = " + str(itsTime5)) 
+	# print("itsTime5 = " + str(itsTime5))
 
 
 if __name__ == '__main__':
