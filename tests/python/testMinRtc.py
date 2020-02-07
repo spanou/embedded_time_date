@@ -32,176 +32,123 @@ from time import struct_time, gmtime, time, localtime, sleep
 
 
 class testSecondsToStructTm(testInfra.Test):
-	testName = None
-	testStatus = None
+    testName = None
+    testStatus = None
 
-	def __init__(self, testStatus:testInfra.TestStatusProducer):
-		self.testName = self.__class__.__name__
-		self.testStatus = testStatus
+    def __init__(self, testStatus:testInfra.TestStatusProducer):
+        self.testName = self.__class__.__name__
+        self.testStatus = testStatus
 
-	def doTest(self):
-		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Started")
-		count = 10000000
+    def doTest(self):
 
-		for n in range(0, count):
-			testData = {}
-			testData["lbound"] = 0
-			testData["ubound"] = count
-			testData["index"] = n
+        """
+        Test Every Hour to the minute and past the minute from the EPOCH to the
+        maximum 32 bit unsigned integer. The struct_tm returned should match the
+        one we get from the time module. If we get an error print out the test
+        parameters and break execution.
+        """
+        secsSinceEpoch = 0
+        secsInMinute = 60
+        max32BitValue = 2**32
+        passCount = 0
+        failCount = 0
+        count = round(max32BitValue/secsInMinute)
 
-			self.testStatus.setTestData(testData)
+        self.testStatus.setTestStatus("Test Name : " + self.testName + " Status -> [Started]")
 
-		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Stopped")
-		return
+        for n in range(0, count):
+            testData = {}
+            testData["lbound"] = 0
+            testData["ubound"] = count
+            testData["index"] = n
+
+            self.testStatus.setTestData(testData)
+
+            structTmExpected = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
+            structTmCalculated = rtcLib.secondsInStuctTm(secsSinceEpoch)
+
+            if structTmCalculated != structTmExpected :
+                # print("Failed at {secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
+                #   secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+                # print("Cal = " + structTmCalculated.debugPrint())
+                # print("Exp = " + structTmExpected.debugPrint())
+                failCount += 1
+            else:
+                # print("{secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
+                #   secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
+                passCount += 1
+
+            secsSinceEpoch += secsInMinute
+
+        self.testStatus.setTestStatus("Test Name : " + self.testName + " Status -> [Stopped]\n" +
+            "Passed: " + str(passCount) + " Failed: " + str(failCount))
+
+        return
 
 class testStructTmToSeconds(testInfra.Test):
-	testName = None
-	testStatus = None
+    testName = None
+    testStatus = None
 
-	def __init__(self, testStatus:testInfra.TestStatusProducer):
-		self.testName = self.__class__.__name__
-		self.testStatus = testStatus
+    def __init__(self, testStatus:testInfra.TestStatusProducer):
+        self.testName = self.__class__.__name__
+        self.testStatus = testStatus
 
-	def doTest(self):
-		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Started")
-		count = 100000000
+    def doTest(self):
+        secsSinceEpoch = 0
+        secsInMinute = 60
+        max32BitValue = 2**32
+        passCount = 0
+        failCount = 0
+        count = round(max32BitValue/secsInMinute)
 
-		for n in range(0, count):
-			testData = {}
-			testData["lbound"] = 0
-			testData["ubound"] = count
-			testData["index"] = n
+        self.testStatus.setTestStatus("Test Name : " + self.testName + " Status -> [Started]")
 
-			self.testStatus.setTestData(testData)
+        for n in range(0, count):
+            testData = {}
+            testData["lbound"] = 0
+            testData["ubound"] = count
+            testData["index"] = n
 
-		self.testStatus.setTestStatus(" Test Name : " + self.testName + " Status : Stopped")
-		return
+            self.testStatus.setTestData(testData)
 
-def testRtcLib():
-	"""
-		Exercises the following functions from minRtcWrapper :
-			tmInSeconds(...)
-			secondsInStuctTm(...);
-			isYearLeap(...)
-			dayOfWeek(...)
-	"""
-	#testSecondsInStructTm()
-	testStructTmInSeconds()
-	# testDayOfWeek()
-	# testIsYearLeap()
+            unixTm = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
+            secs = rtcLib.structTmUnixToSecs(unixTm)
 
-def testSecondsInStructTm():
-	"""
-		Test Every Hour to the minute and past the minute from the EPOCH to the
-		maximum 32 bit unsigned integer. The struct_tm returned should match the
-		one we get from the time module. If we get an error print out the test
-		parameters and break execution.
-	"""
-	secsSinceEpoch = 0
-	#secsInHour = 3600
-	secsInMinute = 60
-	max32BitValue = 2**32
-	passCount = 0
-	failCount = 0
+            if(secs != secsSinceEpoch):
+                # print("Failed at {exp:0>20}, returned {calc:0>20}".format( exp=str(secsSinceEpoch), calc=str(secs)))
+                # print(str(unixTm))
+                failCount += 1
+            else:
+                # print("Passed at {exp:0>20}".format(exp=str(secsSinceEpoch)))
+                passCount +=1
 
-	while secsSinceEpoch < max32BitValue :
-		structTmExpected = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
-		structTmCalculated = rtcLib.secondsInStuctTm(secsSinceEpoch)
+            secsSinceEpoch += secsInMinute
 
-		if structTmCalculated != structTmExpected :
-			print("Failed at {secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
-				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
-			print("Cal = " + structTmCalculated.debugPrint())
-			print("Exp = " + structTmExpected.debugPrint())
-			failCount += 1
-		else:
-			print("{secCount:0>20} - Expected: {exp} Calculated: {calc}".format(
-				secCount=secsSinceEpoch, exp=str(structTmExpected), calc=str(structTmCalculated)))
-			passCount += 1
 
-		secsSinceEpoch += secsInMinute
+        self.testStatus.setTestStatus("Test Name : " + self.testName + " Status -> [Stopped]\n" +
+            "Passed: " + str(passCount) + " Failed: " + str(failCount))
 
-	print("Pass Count : " + str(passCount) + " Fail Count : " + str(failCount))
-
-def testStructTmInSeconds():
-	secsSinceEpoch = 0
-	secsInMinute = 60
-	max32BitValue = 2**32
-	passCount = 0
-	failCount = 0
-
-	print("Starting testStructTmInSeconds()")
-	print("Max 32 Bit Value: " + str(max32BitValue))
-	print("Itterations: " + str(max32BitValue/secsInMinute))
-
-	while secsSinceEpoch < max32BitValue :
-		unixTm = rtcLib.StructTmUnix(gmtime(secsSinceEpoch))
-		secs = rtcLib.structTmUnixToSecs(unixTm)
-
-		if(secs != secsSinceEpoch):
-			print("Failed at {exp:0>20}, returned {calc:0>20}".format( exp=str(secsSinceEpoch), calc=str(secs)))
-			print(str(unixTm))
-			failCount += 1
-		else:
-			print("Passed at {exp:0>20}".format(exp=str(secsSinceEpoch)))
-			passCount +=1
-
-		secsSinceEpoch += secsInMinute
-
-	print("Pass Count : " + str(passCount) + " Fail Count : " + str(failCount))
-
+        return
 
 def main():
-	#testRtcLib()
+    testStatus1 = testInfra.TestStatus()
+    testStatus2 = testInfra.TestStatus()
+    testListStatuses = list()
+    testListStatuses.append(testStatus1)
+    testListStatuses.append(testStatus2)
 
-	testStatus1 = testInfra.TestStatus()
-	testStatus2 = testInfra.TestStatus()
-	testList = list()
-	testList.append(testStatus1)
-	testList.append(testStatus2)
+    displayMonitor = testInfra.DisplayMonitor(testListStatuses)
+    displayMonitor.start()
 
-	displayMonitor = testInfra.DisplayMonitor(testList)
-	displayMonitor.start()
+    testList = []
+    testList.append(testSecondsToStructTm(testStatus1))
+    testList.append(testStructTmToSeconds(testStatus2))
 
-	test1 = testSecondsToStructTm(testStatus1)
-	test1.doInit()
-	test1.doTest()
-	test1.doCleanUp()
-
-	test2 = testStructTmToSeconds(testStatus2)
-	test2.doInit()
-	test2.doTest()
-	test2.doCleanUp()
-
-	# if rtcLib.isLeapYear(2000) :
-	# 	print("Year 2000 is Leap")
-
-	# print("Year: 2000, Month: Jan, Day: 1 -> ( " +
-	# 	rtcLib.dayOfWeekFromDate(2000, "Jan", 1) + " )")
-
-	# rtcLib.secondsInStuctTm()
-
-	# itsTime1 = rtcLib.StructTmUnix()
-	# itsTime1.year = 2000
-	# itsTime1.mon = 0
-	# itsTime1.mday = 1
-	# itsTime1.hour = 0
-	# itsTime1.min = 0
-	# itsTime1.sec = 0
-	# itsTime1.wday = 6
-	# itsTime1.yday = 1
-
-	# itsTime2 = rtcLib.StructTmUnix(itsTime1)
-
-	# print("itsTime1 = " + str(itsTime1))
-	# print("itsTime2 = " + str(itsTime2))
-
-	# itsTime3 = rtcLib.StructTmUnix(time="Blah Blah")
-
-	# itsTime4 = localtime(time())
-	# itsTime5 = rtcLib.StructTmUnix(time=itsTime4)
-	# print("itsTime5 = " + str(itsTime5))
+    for test in testList:
+        test.doInit()
+        test.doTest()
+        test.doCleanUp()
 
 
 if __name__ == '__main__':
-	main()
+    main()

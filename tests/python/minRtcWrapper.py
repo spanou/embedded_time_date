@@ -240,7 +240,7 @@ def structTmUnixToSecs(tm=0):
 
     if 0 == lib.tmInSeconds(secs, t[0]):
       timeStamp = secs[0]
-      print(str(timeStamp))
+      #print(str(timeStamp))
 
     ffi.release(t)
     ffi.release(secs)
